@@ -1,17 +1,12 @@
 // ==UserScript==
-// @name           The Ultimate Popup Blocker
-// @description    Configurable popup blocker that blocks ALL (even user-initiated) popup windows by default. But you can easily open the blocked popup or whitelist a domain, directly from the page.
-// @namespace      jakub-g.github.com
-// @author         http://jakub-g.github.com/
-// @version        0.1-20130112
-// @userscriptsOrg http://userscripts.org/scripts/show/...
+// @name           Ultra Popup Blocker
+// @description    Configurable popup blocker that blocks ALL (even user-initiated) popup windows by default. You can easily open the blocked popup or whitelist a domain, directly from the page.
+// @namespace      https://github.com/eskander
+// @author         eskander
+// @version        0.1
+// @include        *
 // @grant          GM_getValue
 // @grant          GM_setValue
-// @include        *
-// @exclude        http*://*.youtube.com/*
-// @exclude        http*://mail.google.com/*
-// @exclude        http*://*.blogspot.tld/*
-// @exclude        http*://poczta.wp.pl/*
 // ==/UserScript==
 
 // Why another popup blocker?
