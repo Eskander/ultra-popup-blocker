@@ -85,7 +85,7 @@
         if(!logDiv){
             logDiv = document.createElement("div");
             logDiv.setAttribute("id", LOG_ID);
-            logDiv.style.cssText="position:fixed; top:0; left:0; width:100%;\
+            logDiv.style.cssText="position:fixed; bottom:0; left:0; z-index: 99999; width:100%;\
                 padding:5px 5px 5px 29px; font: 8pt microsoft sans serif;\
                 background-color: linen; color:black; border:1px solid black;\
                 ";
