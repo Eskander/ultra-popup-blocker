@@ -11,6 +11,8 @@
 // @compatible     firefox Tested with Tampermonkey
 // @grant          GM_getValue
 // @grant          GM_setValue
+// @grant          GM_openInTab
+// @grant          GM_registerMenuCommand
 // ==/UserScript==
 
 (function () {
