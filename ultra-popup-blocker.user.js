@@ -3,7 +3,7 @@
 // @description    Configurable popup blocker that blocks all popup windows by default. You can easily open the blocked popup or whitelist a domain, directly from the page.
 // @namespace      https://github.com/eskander
 // @author         eskander
-// @version        1.0
+// @version        2.0
 // @include        *
 // @license        MIT
 // @homepage       https://github.com/eskander/ultra-popup-blocker
@@ -206,78 +206,82 @@ background-color: linen; color:black; border:1px solid black;\
         GM_openInTab("https://eskander.github.io/ultra-popup-blocker/configure.html", false);
     }, 'r');
 
-    // Create whitelist manipulation functions
+    // Only run whitelisting mechanism on the appropriate page
 
-    document.getElementsByClassName("addBtn")[0].addEventListener("click", function () {
-        newElement();
-    });
+    if (window.location.href === "https://eskander.github.io/ultra-popup-blocker/configure.html") {
 
-    // Create a "close" button and append it to each list item
+        // Add listener to the add button
 
-    var Nodelist = document.getElementsByTagName("LI");
-    for (var i = 0; i < Nodelist.length; i++) {
-        var span = document.createElement("SPAN");
-        var txt = document.createTextNode("\u00D7");
-        span.className = "close";
-        span.appendChild(txt);
-        span.onclick = function () {
-            var div = this.parentElement;
-            var domain = div.innerText.replace("\n\u00D7", "");
-            GM_deleteValue("whitelisted_" + domain);
-            div.style.display = "none";
-            console.log('[UPB] Domain removed from whitelist: ' + domain);
-        }
-        Nodelist[i].appendChild(span);
-    }
+        document.getElementsByClassName("addBtn")[0].addEventListener("click", function () {
+            newElement();
+        });
 
-    // Create a new list item when clicking on the "Add" button
+        // Create a "close" button and append it to each list item
 
-    var newElement = function () {
-        var inputValue = document.getElementById("Input").value;
-
-        if (inputValue === '') {
-            alert("You must write a domain or subdomain to whitelist.");
-        } else {
-            addElement(inputValue);
+        var Nodelist = document.getElementsByTagName("LI");
+        for (var i = 0; i < Nodelist.length; i++) {
+            var span = document.createElement("SPAN");
+            var txt = document.createTextNode("\u00D7");
+            span.className = "close";
+            span.appendChild(txt);
+            span.onclick = function () {
+                var div = this.parentElement;
+                var domain = div.innerText.replace("\n\u00D7", "");
+                GM_deleteValue("whitelisted_" + domain);
+                div.style.display = "none";
+                console.log('[UPB] Domain removed from whitelist: ' + domain);
+            }
+            Nodelist[i].appendChild(span);
         }
 
-        document.getElementById("Input").value = "";
-    }
+        // Create a new list item when clicking on the "Add" button
 
-    var addElement = function (Value) {
-        var li = document.createElement("li");
-        var t = document.createTextNode(Value);
-        li.appendChild(t);
+        var newElement = function () {
+            var inputValue = document.getElementById("Input").value;
 
-        document.getElementById("UL").appendChild(li);
-        GM_setValue("whitelisted_" + Value, true);
-        console.log('[UPB] Domain added to whitelist: ' + Value);
+            if (inputValue === '') {
+                alert("You must write a domain or subdomain to whitelist.");
+            } else {
+                addElement(inputValue);
+            }
 
-        // Add a close button to the newly created item
-        var span = document.createElement("SPAN");
-        var txt = document.createTextNode("\u00D7");
-        span.className = "close";
-        span.appendChild(txt);
-        span.onclick = function () {
-            var div = this.parentElement;
-            var domain = div.innerText.replace("\n\u00D7", "");
-            GM_deleteValue("whitelisted_" + domain);
-            div.style.display = "none";
-            console.log('[UPB] Domain removed from whitelist: ' + domain);
+            document.getElementById("Input").value = "";
         }
-        li.appendChild(span);
+
+        var addElement = function (Value) {
+            var li = document.createElement("li");
+            var t = document.createTextNode(Value);
+            li.appendChild(t);
+
+            document.getElementById("UL").appendChild(li);
+            GM_setValue("whitelisted_" + Value, true);
+            console.log('[UPB] Domain added to whitelist: ' + Value);
+
+            // Add a close button to the newly created item
+            var span = document.createElement("SPAN");
+            var txt = document.createTextNode("\u00D7");
+            span.className = "close";
+            span.appendChild(txt);
+            span.onclick = function () {
+                var div = this.parentElement;
+                var domain = div.innerText.replace("\n\u00D7", "");
+                GM_deleteValue("whitelisted_" + domain);
+                div.style.display = "none";
+                console.log('[UPB] Domain removed from whitelist: ' + domain);
+            }
+            li.appendChild(span);
+        }
+
+        // Show already stored elements in the list
+
+        var storedWhitelist = GM_listValues();
+        storedWhitelist.forEach(populate);
+        console.log(storedWhitelist);
+
+        function populate(value, index, array) {
+            addElement(value.replace("whitelisted_", ""));
+        }
     }
-
-    // Show already stored elements in the list
-
-    var storedWhitelist = GM_listValues();
-    storedWhitelist.forEach(populate);
-    console.log(storedWhitelist);
-
-    function populate(value, index, array) {
-        addElement(value.replace("whitelisted_", ""));
-    }
-
 
     // ============================ LET'S RUN IT ================================
 
