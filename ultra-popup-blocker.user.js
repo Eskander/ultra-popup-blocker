@@ -18,7 +18,7 @@
     var bDisplayMessageOnPopupBlocked = true;
     var bDisplayOpenPopupLink = true;
     var bDisplayWhiteListThisDomainLink = true;
-    var LOG_ID = "ultimate_popup_blocker"; // HTML ID in the page
+    var LOG_ID = "ultra_popup_blocker"; // HTML ID in the page
 
     // ============================ FUNCTIONS ================================
     var global = unsafeWindow; // reference to page's "window" through GreaseMonkey
