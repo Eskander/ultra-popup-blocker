@@ -25,19 +25,23 @@ function newElement() {
     var inputValue = document.getElementById("myInput").value;
     var t = document.createTextNode(inputValue);
     li.appendChild(t);
+
     if (inputValue === '') {
-        alert("You must write something!");
+        alert("You must write a domain or subdomain to whitelist.");
     } else {
         document.getElementById("myUL").appendChild(li);
     }
+
     document.getElementById("myInput").value = "";
 
+    // Actually create the new element
     var span = document.createElement("SPAN");
     var txt = document.createTextNode("\u00D7");
     span.className = "close";
     span.appendChild(txt);
     li.appendChild(span);
 
+    // Add a close button
     for (i = 0; i < close.length; i++) {
         close[i].onclick = function () {
             var div = this.parentElement;
