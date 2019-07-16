@@ -204,6 +204,14 @@
         global.open = fakeWindowOpen;
     };
 
+    // ============================== SETTINGS PAGE =================================
+
+    GM_registerMenuCommand('Configure whitelist', function () {
+        GM_openInTab("https://eskander.github.io/ultra-popup-blocker/configure.html", false);
+    }, 'r');
+
+
+
     // ============================ LET'S RUN IT ================================
 
     var disabled = isCurrentDomainWhiteListed();
