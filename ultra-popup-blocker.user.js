@@ -3,7 +3,7 @@
 // @description    Configurable popup blocker that blocks all popup windows by default. You can easily open the blocked popup or whitelist a domain, directly from the page.
 // @namespace      https://github.com/eskander
 // @author         eskander
-// @version        2.0
+// @version        2.1
 // @include        *
 // @license        MIT
 // @homepage       https://github.com/eskander/ultra-popup-blocker
@@ -87,19 +87,8 @@ background-color: linen; color:black; border:1px solid black;\
         var d1 = documentDomain;
         var domainsArr = [];
 
-        var lastDot1 = d1.lastIndexOf('.');
-        if (lastDot1 != -1) {
-            var lastDot2 = d1.lastIndexOf('.', lastDot1 - 1);
-            if (lastDot2 != -1 && lastDot2 != lastDot1) {
-                var d2 = d1.substr(lastDot2 + 1);
-                domainsArr.push(d2);
-
-                var lastDot3 = d1.lastIndexOf('.', lastDot2 - 1);
-                if (lastDot3 != -1 && lastDot3 != lastDot2) {
-                    var d3 = d1.substr(lastDot3 + 1);
-                    domainsArr.push(d3);
-                }
-            }
+        while (d1.split(".").length > 2) {
+            d1 = d1.substring(d1.indexOf('.') + 1);
         }
 
         domainsArr.push(d1);
@@ -178,12 +167,6 @@ background-color: linen; color:black; border:1px solid black;\
 
         putText(logDiv, ' whitelist the domain: '); // using 'innerHTML += ' breaks event listeners strangely
         putWhitelistButton(logDiv, domainsArr[0]);
-        if (domainsArr[1]) {
-            putWhitelistButton(logDiv, domainsArr[1]);
-        }
-        if (domainsArr[2]) {
-            putWhitelistButton(logDiv, domainsArr[2]);
-        }
     };
 
     var displayCloseButton = function (logDiv) {
