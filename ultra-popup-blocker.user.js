@@ -3,7 +3,7 @@
 // @description    Configurable popup blocker that blocks all popup windows by default. You can easily open the blocked popup or whitelist a domain, directly from the page.
 // @namespace      https://github.com/eskander
 // @author         eskander
-// @version        2.1
+// @version        2.2
 // @include        *
 // @license        MIT
 // @homepage       https://github.com/eskander/ultra-popup-blocker
@@ -41,7 +41,7 @@
                                 padding: 1px 3px;\
                                 background-color: rgb(255, 255, 255);\
                                 border-width: 0px;\
-                                border-style: outset;\
+                                border-radius: 5px;\
                                 color: black;" + inlineStyle;
         logDiv.appendChild(button);
         button.addEventListener("click", clickCallback);
