@@ -47,7 +47,7 @@ border-color:#eee #555 #555 #eee; color:black;" + inlineStyle;
     // in internal Firefox storage.
 
     var putWhitelistButton = function (logDiv, domain) {
-        putButton(logDiv, domain, function () {
+        putButton(logDiv, "Whitelist &#128504;", function () {
             GM_setValue("whitelisted_" + domain, true);
         });
     };
@@ -75,12 +75,7 @@ background-color: linen; color:black; border:1px solid black;\
         return logDiv;
     };
 
-    // Get array of domains for which it would make sense to whitelist them.
-    // Sample valid outputs:
-    //      localhost       -> ['localhost']
-    //      youtube.com     -> ['youtube.com']
-    //      www.youtube.com -> ['youtube.com', 'www.youtube.com']
-    //      a.b.c.d         -> ['c.d', 'b.c.d', 'a.b.c.d']
+    // Get top domain to whitelist.
 
     var getDomainsArray = function (documentDomain) {
         // e.g. domain = www.google.com, topDomain = google.com
@@ -144,35 +139,42 @@ background-color: linen; color:black; border:1px solid black;\
             displayWhiteListThisDomainLink(logDiv);
         }
         displayCloseButton(logDiv);
+
+        displayConfigButton(logDiv);
+
         return FakeWindow; // see the doc of FakeWindow
     };
 
     var logMessage = function (logDiv, url) {
         global.upb_counter = (global.upb_counter || 0);
         url = (url[0] == '/') ? document.domain + url : url;
-        var msg = ["[UPB] Blocked <b>", ++global.upb_counter, "</b> popup windows, last: <u>", url, "</u>"].join("");
+        var msg = ["[UPB] Blocked <b>", ++global.upb_counter, "</b> popup(s), last: <u>", url, "</u>"].join("");
         logDiv.innerHTML = msg;
         console.log(msg);
         logDiv.style.display = "block";
     };
 
     var displayOpenPopupLink = function (logDiv, realArguments) {
-        putButton(logDiv, "open the popup", function () {
+        putButton(logDiv, "Open &#8599;", function () {
             realWindowOpen.apply(null, realArguments);
         });
     };
 
     var displayWhiteListThisDomainLink = function (logDiv) {
         var domainsArr = getDomainsArray(document.domain);
-
-        putText(logDiv, ' whitelist the domain: '); // using 'innerHTML += ' breaks event listeners strangely
         putWhitelistButton(logDiv, domainsArr[0]);
     };
 
     var displayCloseButton = function (logDiv) {
-        putButton(logDiv, "x", function () {
+        putButton(logDiv, "Close &#10799;", function () {
             logDiv.style.display = 'none';
         }, 'background-color: #a00; color:white; margin:0 32px 0 0; float:right');
+    };
+
+    var displayConfigButton = function (logDiv) {
+        putButton(logDiv, "Config &#9881;", function () {
+            GM_openInTab("https://eskander.github.io/ultra-popup-blocker/configure.html", false);
+        }, 'float:right');
     };
 
     // Override browser's "window.open" with our own implementation.
