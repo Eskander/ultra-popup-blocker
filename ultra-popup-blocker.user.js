@@ -255,7 +255,7 @@
             var t = document.createTextNode(Value);
             li.appendChild(t);
 
-            document.getElementById("UL").appendChild(li);
+            document.getElementById("List").appendChild(li);
             GM_setValue("whitelisted_" + Value, true);
             console.log('[UPB] Domain added to whitelist: ' + Value);
 

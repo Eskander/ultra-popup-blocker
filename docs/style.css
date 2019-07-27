@@ -62,6 +62,16 @@ ul li:hover {
     text-align: center;
 }
 
+.title {
+    margin: 5px;
+}
+
+.subtitle {
+    text-align: left;
+}
+
+
+
 /* Clear floats after the header */
 .header:after {
     content: "";
