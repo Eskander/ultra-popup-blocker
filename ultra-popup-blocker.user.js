@@ -34,10 +34,15 @@
     var putButton = function (logDiv, text, clickCallback, inlineStyle) {
         var button = document.createElement("button");
         button.innerHTML = text;
-        button.style.cssText = "text-decoration:none; color:black; cursor:pointer;\
-margin: 0 5px; font: 8pt microsoft sans serif; padding: 1px 3px;\
-background-color:rgb(212,208,200); border-width:2px; border-style:outset;\
-border-color:#eee #555 #555 #eee; color:black;" + inlineStyle;
+        button.style.cssText = "text-decoration: none;\
+                                color: black;\
+                                cursor: pointer;\
+                                margin: 0 5px;\
+                                padding: 1px 3px;\
+                                background-color: rgb(255, 255, 255);\
+                                border-width: 0px;\
+                                border-style: outset;\
+                                color: black;" + inlineStyle;
         logDiv.appendChild(button);
         button.addEventListener("click", clickCallback);
     };
@@ -66,10 +71,15 @@ border-color:#eee #555 #555 #eee; color:black;" + inlineStyle;
         if (!logDiv) {
             logDiv = document.createElement("div");
             logDiv.setAttribute("id", LOG_ID);
-            logDiv.style.cssText = "position:fixed; bottom:0; left:0; z-index: 99999; width:100%;\
-padding:5px 5px 5px 29px; font: 8pt microsoft sans serif;\
-background-color: linen; color:black; border:1px solid black;\
-";
+            logDiv.style.cssText = "position: fixed;\
+                                    bottom: 0;\
+                                    left: 0;\
+                                    z-index: 99999;\
+                                    width: 100%;\
+                                    padding: 5px 5px 5px 5px;\
+                                    font: 10pt microsoft sans serif;\
+                                    background-color: black;\
+                                    color: white;";
             document.body.appendChild(logDiv);
         }
         return logDiv;
@@ -168,7 +178,10 @@ background-color: linen; color:black; border:1px solid black;\
     var displayCloseButton = function (logDiv) {
         putButton(logDiv, "Close &#10799;", function () {
             logDiv.style.display = 'none';
-        }, 'background-color: #a00; color:white; margin:0 32px 0 0; float:right');
+        }, 'background-color: #a00;\
+            color: white;\
+            margin: 0 10px 0 0;\
+            float: right');
     };
 
     var displayConfigButton = function (logDiv) {
