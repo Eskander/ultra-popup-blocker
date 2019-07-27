@@ -77,7 +77,7 @@
                                     z-index: 99999;\
                                     width: 100%;\
                                     padding: 5px 5px 5px 5px;\
-                                    font: 10pt microsoft sans serif;\
+                                    font: status-bar;\
                                     background-color: black;\
                                     color: white;";
             document.body.appendChild(logDiv);
@@ -158,7 +158,11 @@
     var logMessage = function (logDiv, url) {
         global.upb_counter = (global.upb_counter || 0);
         url = (url[0] == '/') ? document.domain + url : url;
-        var msg = ["[UPB] Blocked <b>", ++global.upb_counter, "</b> popup(s), last: <u>", url, "</u>"].join("");
+        if (global.upb_counter++ == 0) {
+            var msg = ["<b>[UPB]</b> Blocked <b>1</b> popup: <u>", url, "</u>"].join("");
+        } else {
+            var msg = ["<b>[UPB]</b> Blocked <b>", global.upb_counter, "</b> popups, last: <u>", url, "</u>"].join("");
+        }
         logDiv.innerHTML = msg;
         console.log(msg);
         logDiv.style.display = "block";
