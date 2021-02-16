@@ -1,0 +1,27 @@
+{
+  "name": "ultra-popup-blocker",
+  "version": "1.0.0",
+  "description": "Configurable popup blocker that blocks all popup windows by default.",
+  "main": "ultra-popup-blocker.user.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Eskander/ultra-popup-blocker.git"
+  },
+  "author": "Eskander",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Eskander/ultra-popup-blocker/issues"
+  },
+  "homepage": "https://github.com/Eskander/ultra-popup-blocker#readme",
+  "devDependencies": {
+    "eslint": "^7.20.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1"
+  }
+}
