@@ -1,6 +1,7 @@
 {
     "env": {
         "browser": true,
+        "greasemonkey": true,
         "es2021": true
     },
     "extends": [
