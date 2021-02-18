@@ -50,6 +50,7 @@ function addDomainToLocalStorage(domain) {
 // Remove @domain from local storage
 function removeDomainFromLocalStorage(domain) {
   GM_deleteValue(`trusted_${domain}`);
+  GM_deleteValue(`${domain}`);
 }
 
 // Return true if @domain is trusted
@@ -142,13 +143,18 @@ function addDomainToPermissionList(domain) {
   console.log(`[UPB] Domain added to trust: ${domainName}`);
 }
 
-// Permission manager; Add a new domain to permissions list
+// Permission manager; Button to add a new domain to permissions list
 function addNewDomainButton() {
-  const DOMAIN = document.getElementById('Input').value;
-  if (DOMAIN !== '') {
-    addDomainToPermissionList(DOMAIN);
-  }
-  document.getElementById('Input').value = '';
+  document.getElementsByClassName('addBtn')[0].addEventListener(
+    'click',
+    () => {
+      const DOMAIN = document.getElementById('Input').value;
+      if (DOMAIN !== '') {
+        addDomainToPermissionList(DOMAIN);
+      }
+      document.getElementById('Input').value = '';
+    },
+  );
 }
 
 // Permission bar; Create a button with inner text @text executing onclick
@@ -277,13 +283,7 @@ attachToExtensionMenu(
 // Only run trusting mechanism on the appropriate page
 if (window.location.href === CONTROL_PANEL) {
   // Add listener to the add button
-  document.getElementsByClassName('addBtn')[0].addEventListener(
-    'click',
-    () => {
-      addNewDomainButton();
-    },
-  );
-
+  addNewDomainButton();
   // Show already stored elements in the list
   const storedTrust = getTrustedDomains();
   storedTrust.forEach(addDomainToPermissionList);
