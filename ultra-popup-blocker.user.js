@@ -47,21 +47,21 @@ const FakeWindow = {
 
 // Add @domain to local storage
 function addDomainToLocalStorage(domain) {
-  GM_setValue(`whitelisted_${domain}`, true);
+  GM_setValue(`trusted_${domain}`, true);
 }
 
 // Remove @domain from local storage
 function removeDomainFromLocalStorage(domain) {
-  GM_deleteValue(`whitelisted_${domain}`);
+  GM_deleteValue(`trusted_${domain}`);
 }
 
-// Return true if @domain is whitelisted
-function isDomainWhitelisted(domain) {
-  return GM_getValue(`whitelisted_${domain}`);
+// Return true if @domain is trusted
+function isDomainTrusted(domain) {
+  return GM_getValue(`trusted_${domain}`);
 }
 
-// Return an Array of whitelisted domains
-function getWhitelistedDomains() {
+// Return an Array of trusted domains
+function getTrustedDomains() {
   return GM_listValues();
 }
 
@@ -110,10 +110,10 @@ function getCurrentTopDomain() {
   return currentDomain;
 }
 
-// Return true if current domain has been whitelisted by the user
-function isCurrentDomainWhiteListed() {
+// Return true if current domain has been trusted by the user
+function isCurrentDomainTrusted() {
   const domain = getCurrentTopDomain();
-  return isDomainWhitelisted(domain);
+  return isDomainTrusted(domain);
 }
 
 // Permission manager; Create a button to remove domain from permissions list
@@ -123,12 +123,12 @@ function removeDomainFromPermissionList() {
   const domain = div.innerText.replace('\n\u00D7', '');
   removeDomainFromLocalStorage(domain);
   div.style.display = 'none';
-  console.log(`[UPB] Domain removed from whitelist: ${domain}`);
+  console.log(`[UPB] Domain removed from trust: ${domain}`);
 }
 
 // Permission manager; Add a new domain to permissions list
 function addDomainToPermissionList(domain) {
-  const domainName = domain.replace('whitelisted_', '');
+  const domainName = domain.replace('trusted_', '');
   const li = document.createElement('li');
   const t = document.createTextNode(domainName);
   li.appendChild(t);
@@ -142,13 +142,15 @@ function addDomainToPermissionList(domain) {
   li.appendChild(span);
   // Add domain to localStorage
   addDomainToLocalStorage(domainName);
-  console.log(`[UPB] Domain added to whitelist: ${domainName}`);
+  console.log(`[UPB] Domain added to trust: ${domainName}`);
 }
 
 // Permission manager; Add a new domain to permissions list
 function addNewDomainButton() {
   const DOMAIN = document.getElementById('Input').value;
-  addDomainToPermissionList(DOMAIN);
+  if (DOMAIN !== '') {
+    addDomainToPermissionList(DOMAIN);
+  }
   document.getElementById('Input').value = '';
 }
 
@@ -171,11 +173,11 @@ function createButton(logDiv, text, clickCallback, inlineStyle) {
   button.addEventListener('click', clickCallback);
 }
 
-// Permission bar; Create a button (child of @logDiv) which onclick whitelists @domain
-function createWhitelistButton(logDiv, domain) {
+// Permission bar; Create a button (child of @logDiv) which onclick trusts @domain
+function createTrustButton(logDiv, domain) {
   createButton(
     logDiv,
-    'Whitelist &#128504;',
+    'Trust &#128504;',
     () => {
       addDomainToLocalStorage(domain);
     },
@@ -254,7 +256,7 @@ function fakeWindowOpen(...args) {
   console.log(...args);
   createDialogMessage(logDiv, popupURL);
   createOpenPopupButton(logDiv, args);
-  createWhitelistButton(logDiv, domain);
+  createTrustButton(logDiv, domain);
   createCloseButton(logDiv);
   createConfigButton(logDiv);
   return FakeWindow;
@@ -275,7 +277,7 @@ attachToExtensionMenu(
   },
 );
 
-// Only run whitelisting mechanism on the appropriate page
+// Only run trusting mechanism on the appropriate page
 if (window.location.href === CONTROL_PANEL) {
   // Add listener to the add button
   document.getElementsByClassName('addBtn')[0].addEventListener(
@@ -286,14 +288,14 @@ if (window.location.href === CONTROL_PANEL) {
   );
 
   // Show already stored elements in the list
-  const storedWhitelist = getWhitelistedDomains();
-  storedWhitelist.forEach(addDomainToPermissionList);
-  console.log(storedWhitelist);
+  const storedTrust = getTrustedDomains();
+  storedTrust.forEach(addDomainToPermissionList);
+  console.log(storedTrust);
 }
 
-const disabled = isCurrentDomainWhiteListed();
+const disabled = isCurrentDomainTrusted();
 if (disabled) {
-  console.log('[UPB] Current domain was found on a white list. UPB disabled.');
+  console.log('[UPB] Current domain was found on trust list. UPB disabled.');
 } else {
   activateBlocker();
 }
