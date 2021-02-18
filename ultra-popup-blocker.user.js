@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-multi-str */
-
 // ==UserScript==
 // @name         Ultra Popup Blocker
 // @description  Configurable popup blocker that blocks all popup windows by default.
