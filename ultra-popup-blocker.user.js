@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable no-alert */
 /* eslint-disable no-console */
 /* eslint-disable no-multi-str */
 
@@ -22,13 +20,14 @@
 // @grant        GM_registerMenuCommand
 // ==/UserScript==
 
-// ============================== CONFIG =================================
+/* ---------------------------------------------------------------- */
 
-const LOG_ID = 'ultra_popup_blocker'; // HTML ID in the page
-const controlPanel = 'https://eskander.github.io/ultra-popup-blocker/configure.html';
+const PERMISSION_DIALOG_ID = 'ultra_popup_blocker'; // HTML ID in the page
+const CONTROL_PANEL = 'https://eskander.github.io/ultra-popup-blocker/configure.html';
 
-// reference to page's "window" through GreaseMonkey
+// Reference to page's "window" through GreaseMonkey
 const global = unsafeWindow;
+global.upb_counter = 0;
 
 // Storing a reference to real "window.open" method in case we wanted it
 const realWindowOpen = global.open;
@@ -44,44 +43,44 @@ const FakeWindow = {
   },
 };
 
-// ============================ FUNCTIONS ================================
+/* ---------------------------------------------------------------- */
 
-// Helper to create a button with inner text @text executing onclick @clickCallback,
-// appended as a child of @logDiv
-function putButton(logDiv, text, clickCallback, inlineStyle) {
-  const button = document.createElement('button');
-  button.innerHTML = text;
-  button.style.cssText = `text-decoration: none;\
-                          color: black;\
-                          cursor: pointer;\
-                          margin: 0 5px;\
-                          padding: 1px 3px;\
-                          background-color: rgb(255, 255, 255);\
-                          border-width: 0px;\
-                          border-radius: 5px;\
-                          color: black; ${inlineStyle}`;
-  logDiv.appendChild(button);
-  button.addEventListener('click', clickCallback);
+// Add @domain to local storage
+function addDomainToLocalStorage(domain) {
+  GM_setValue(`whitelisted_${domain}`, true);
 }
 
-// Helper to create a button (child of @logDiv) which onclick whitelists @domain
-// in internal Firefox storage.
-function putWhitelistButton(logDiv, domain) {
-  putButton(
-    logDiv,
-    'Whitelist &#128504;',
-    () => {
-      GM_setValue(`whitelisted_${domain}`, true);
-    },
-  );
+// Remove @domain from local storage
+function removeDomainFromLocalStorage(domain) {
+  GM_deleteValue(`whitelisted_${domain}`);
 }
 
-// Return logger div, or create it ad-hoc.
+// Return true if @domain is whitelisted
+function isDomainWhitelisted(domain) {
+  return GM_getValue(`whitelisted_${domain}`);
+}
+
+// Return an Array of whitelisted domains
+function getWhitelistedDomains() {
+  return GM_listValues();
+}
+
+// Open permission manager in new tab
+function openControlPanel() {
+  GM_openInTab(CONTROL_PANEL, false);
+}
+
+// Add a link to permission manager in extensions' popup menu
+function attachToExtensionMenu(name, callback) {
+  GM_registerMenuCommand(name, callback);
+}
+
+// Permission bar; Return permission dialog, or create it if needed.
 function getLogDiv() {
-  let logDiv = document.getElementById(LOG_ID);
+  let logDiv = document.getElementById(PERMISSION_DIALOG_ID);
   if (!logDiv) {
     logDiv = document.createElement('div');
-    logDiv.setAttribute('id', LOG_ID);
+    logDiv.setAttribute('id', PERMISSION_DIALOG_ID);
     logDiv.style.cssText = 'position: fixed;\
                             bottom: 0;\
                             left: 0;\
@@ -96,68 +95,113 @@ function getLogDiv() {
   return logDiv;
 }
 
-// Get top domain to whitelist.
-function getDomainsArray(documentDomain) {
-  // e.g. domain = www.google.com, topDomain = google.com
-  let d1 = documentDomain;
-  const domainsArr = [];
-  while (d1.split('.').length > 2) {
-    d1 = d1.substring(d1.indexOf('.') + 1);
-  }
-  domainsArr.push(d1);
-  return domainsArr;
+// Permission bar; Hide dialog
+function closeLogDiv(logDiv) {
+  const currentLogDiv = logDiv;
+  currentLogDiv.style.display = 'none';
 }
 
-// Checks if domain we're currently browsing has been whitelisted by the user
-// to display popups.
+// Return current top domain. eg: github.com
+function getCurrentTopDomain() {
+  const hostnameArray = document.location.hostname.split('.');
+  const topLevelDomain = hostnameArray[hostnameArray.length - 1];
+  const domainName = hostnameArray[hostnameArray.length - 2];
+  const currentDomain = `${domainName}.${topLevelDomain}`;
+  return currentDomain;
+}
+
+// Return true if current domain has been whitelisted by the user
 function isCurrentDomainWhiteListed() {
-  const domains = getDomainsArray(document.domain);
-  // if any 'd' in 'domains' was whitelisted, we return true
-  const whitelisted = domains.some(
-    (d) => GM_getValue(`whitelisted_${d}`),
+  const domain = getCurrentTopDomain();
+  return isDomainWhitelisted(domain);
+}
+
+// Permission manager; Create a button to remove domain from permissions list
+function removeDomainFromPermissionList() {
+  const div = this.parentElement;
+  console.log(div);
+  const domain = div.innerText.replace('\n\u00D7', '');
+  removeDomainFromLocalStorage(domain);
+  div.style.display = 'none';
+  console.log(`[UPB] Domain removed from whitelist: ${domain}`);
+}
+
+// Permission manager; Add a new domain to permissions list
+function addDomainToPermissionList(domain) {
+  const domainName = domain.replace('whitelisted_', '');
+  const li = document.createElement('li');
+  const t = document.createTextNode(domainName);
+  li.appendChild(t);
+  document.getElementById('List').appendChild(li);
+  // Add a remove button to li
+  const span = document.createElement('SPAN');
+  const txt = document.createTextNode('\u00D7');
+  span.className = 'close';
+  span.appendChild(txt);
+  span.onclick = removeDomainFromPermissionList;
+  li.appendChild(span);
+  // Add domain to localStorage
+  addDomainToLocalStorage(domainName);
+  console.log(`[UPB] Domain added to whitelist: ${domainName}`);
+}
+
+// Permission manager; Add a new domain to permissions list
+function addNewDomainButton() {
+  const DOMAIN = document.getElementById('Input').value;
+  addDomainToPermissionList(DOMAIN);
+  document.getElementById('Input').value = '';
+}
+
+// Permission bar; Create a button with inner text @text executing onclick
+// @clickCallback, appended as a child of @logDiv, with style @inlineStyle.
+function createButton(logDiv, text, clickCallback, inlineStyle) {
+  const button = document.createElement('button');
+  button.innerHTML = text;
+  button.style.cssText = `text-decoration: none;\
+                          color: black;\
+                          cursor: pointer;\
+                          margin: 0 5px;\
+                          padding: 1px 3px;\
+                          background-color: rgb(255, 255, 255);\
+                          border-width: 0px;\
+                          border-radius: 5px;\
+                          color: black;\
+                          ${inlineStyle}`;
+  logDiv.appendChild(button);
+  button.addEventListener('click', clickCallback);
+}
+
+// Permission bar; Create a button (child of @logDiv) which onclick whitelists @domain
+function createWhitelistButton(logDiv, domain) {
+  createButton(
+    logDiv,
+    'Whitelist &#128504;',
+    () => {
+      addDomainToLocalStorage(domain);
+    },
+    '',
   );
-  return whitelisted;
 }
 
-// This function will be called each time a script wants to open a new window,
-// if the blocker is activated.
-// We handle the blocking & messaging logic here.
-
-function logMessage(logDiv, url) {
-  let msg;
-  global.upb_counter = (global.upb_counter || 0) + 1;
-  const Url = (url[0] === '/') ? document.domain + url : url;
-  if (global.upb_counter === 0) {
-    msg = `<b>[UPB]</b> Blocked <b>1</b> popup: <u>${Url}</u>`;
-  } else {
-    msg = `<b>[UPB]</b> Blocked <b>${global.upb_counter}</b> popups, last: <u>${Url}</u>`;
-  }
-  logDiv.innerHTML = msg;
-  console.log(msg);
-  logDiv.style.display = 'block';
-}
-
-function displayOpenPopupLink(logDiv, args) {
-  putButton(
+// Permission bar; Create a button (child of @logDiv) which onclick opens @domain
+function createOpenPopupButton(logDiv, args) {
+  createButton(
     logDiv,
     'Open &#8599;',
     () => {
       realWindowOpen(...args);
     },
+    '',
   );
 }
 
-function displayWhiteListThisDomainLink(logDiv) {
-  const domainsArr = getDomainsArray(document.domain);
-  putWhitelistButton(logDiv, domainsArr[0]);
-}
-
-function displayCloseButton(logDiv) {
-  putButton(
+// Permission bar; Create a button (child of @logDiv) which onclick hides @logDiv
+function createCloseButton(logDiv) {
+  createButton(
     logDiv,
     'Close &#10799;',
     () => {
-      logDiv.style.display = 'none';
+      closeLogDiv(logDiv);
     },
     ' background-color: #a00;\
       color: white;\
@@ -166,26 +210,53 @@ function displayCloseButton(logDiv) {
   );
 }
 
-function displayConfigButton(logDiv) {
-  putButton(
+// Permission bar; Create a button (child of @logDiv) which onclick opens @controlPanel
+function createConfigButton(logDiv) {
+  createButton(
     logDiv,
     'Config &#9881;',
     () => {
-      GM_openInTab(controlPanel, false);
+      openControlPanel();
     },
     'float:right',
   );
 }
 
+// Permission bar; Display a permission prompt when a new popup is detected
+function createDialogMessage(logDiv, url) {
+  const currentLogDiv = logDiv;
+  let msg;
+  let popupUrl;
+  global.upb_counter += 1;
+
+  if (url[0] === '/') {
+    popupUrl = document.domain + url;
+  } else {
+    popupUrl = url;
+  }
+
+  if (global.upb_counter === 1) {
+    msg = `<b>[UPB]</b> Blocked <b>1</b> popup: <u>${popupUrl}</u>`;
+  } else {
+    msg = `<b>[UPB]</b> Blocked <b>${global.upb_counter}</b> popups, last: <u>${popupUrl}</u>`;
+  }
+
+  currentLogDiv.innerHTML = msg;
+  console.log(msg);
+  currentLogDiv.style.display = 'block';
+}
+
+// This function will be called each time a script wants to open a new window
 function fakeWindowOpen(...args) {
+  const domain = getCurrentTopDomain();
+  const popupURL = args[0];
   const logDiv = getLogDiv();
-  const url = args[0];
   console.log(...args);
-  logMessage(logDiv, url);
-  displayOpenPopupLink(logDiv, args);
-  displayWhiteListThisDomainLink(logDiv);
-  displayCloseButton(logDiv);
-  displayConfigButton(logDiv);
+  createDialogMessage(logDiv, popupURL);
+  createOpenPopupButton(logDiv, args);
+  createWhitelistButton(logDiv, domain);
+  createCloseButton(logDiv);
+  createConfigButton(logDiv);
   return FakeWindow;
 }
 
@@ -194,72 +265,31 @@ function activateBlocker() {
   global.open = fakeWindowOpen;
 }
 
-// ============================== CONTROL PANEL =================================
+/* ---------------------------------------------------------------- */
 
 // Add configure link to Tampermonkey's menu
-GM_registerMenuCommand(
-  'Configure whitelist',
-  () => { GM_openInTab(controlPanel, false); },
-  'r',
+attachToExtensionMenu(
+  'Configure popup permissions',
+  () => {
+    openControlPanel();
+  },
 );
 
-// Create a new list item when clicking on the "Add" button
-
-function addElement(Value) {
-  const li = document.createElement('li');
-  const t = document.createTextNode(Value);
-  li.appendChild(t);
-
-  document.getElementById('List').appendChild(li);
-
-  GM_setValue(`whitelisted_${Value}`, true);
-  console.log(`[UPB] Domain added to whitelist: ${Value}`);
-
-  // Add a close button to the newly created item
-  const span = document.createElement('SPAN');
-  const txt = document.createTextNode('\u00D7');
-  span.className = 'close';
-  span.appendChild(txt);
-  span.onclick = function close() {
-    const div = this.parentElement;
-    console.log(div);
-    const domain = div.innerText.replace('\n\u00D7', '');
-    GM_deleteValue(`whitelisted_${domain}`);
-    div.style.display = 'none';
-    console.log(`[UPB] Domain removed from whitelist: ${domain}`);
-  };
-  li.appendChild(span);
-}
-
-function newElement() {
-  const inputValue = document.getElementById('Input').value;
-  if (inputValue === '') {
-    alert('You must write a domain or subdomain to whitelist.');
-  } else {
-    addElement(inputValue);
-  }
-  document.getElementById('Input').value = '';
-}
-
-function populate(value) {
-  addElement(value.replace('whitelisted_', ''));
-}
-
 // Only run whitelisting mechanism on the appropriate page
-if (window.location.href === controlPanel) {
+if (window.location.href === CONTROL_PANEL) {
   // Add listener to the add button
   document.getElementsByClassName('addBtn')[0].addEventListener(
     'click',
-    () => { newElement(); },
+    () => {
+      addNewDomainButton();
+    },
   );
 
   // Show already stored elements in the list
-  const storedWhitelist = GM_listValues();
-  storedWhitelist.forEach(populate);
+  const storedWhitelist = getWhitelistedDomains();
+  storedWhitelist.forEach(addDomainToPermissionList);
   console.log(storedWhitelist);
 }
-
-// ============================ LET'S RUN IT ================================
 
 const disabled = isCurrentDomainWhiteListed();
 if (disabled) {
