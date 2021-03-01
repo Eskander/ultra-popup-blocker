@@ -198,6 +198,7 @@ function createOpenPopupButton(logDiv, a, b, c) {
     'Open &#8599;',
     () => {
       realWindowOpen(a, b, c);
+      closeLogDiv(logDiv);
     },
     '',
   );
