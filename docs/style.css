@@ -85,6 +85,7 @@ input {
     border: none;
     border-radius: 0;
     width: 75%;
+    height: 45px;
     padding: 10px;
     float: left;
     font-size: 16px;
@@ -94,6 +95,7 @@ input {
 .addBtn {
     padding: 10px;
     width: 25%;
+    height: 45px;
     background: #d9d9d9;
     color: #555;
     float: left;

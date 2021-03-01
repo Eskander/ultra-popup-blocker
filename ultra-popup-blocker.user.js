@@ -9,6 +9,7 @@
 // @homepage     https://github.com/eskander/ultra-popup-blocker
 // @supportURL   https://github.com/eskander/ultra-popup-blocker/issues/new
 // @compatible   firefox Tampermonkey recommended
+// @compatible   chrome Tampermonkey recommended
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_deleteValue
