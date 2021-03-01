@@ -291,15 +291,22 @@ function activateControlPanel() {
   }
 }
 
+function activateExtensionMenu() {
+  attachToExtensionMenu(
+    'Configure popup permissions',
+    () => {
+      openControlPanel();
+    },
+  );
+}
+
 /* ---------------------------------------------------------------- */
 
 // Add configure link to Tampermonkey's menu
-attachToExtensionMenu(
-  'Configure popup permissions',
-  () => {
-    openControlPanel();
-  },
-);
+activateExtensionMenu();
 
+// Initiate Control Panel logic
 activateControlPanel();
+
+// Start Popup Blocker
 activateBlocker();
