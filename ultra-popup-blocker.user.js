@@ -183,6 +183,9 @@ function createTrustButton(logDiv, domain, a, b, c) {
     'Trust &#128504;',
     () => {
       addDomainToLocalStorage(domain);
+      realWindowOpen(a, b, c);
+      closeLogDiv(logDiv);
+      global.open = realWindowOpen;
     },
     '',
   );
