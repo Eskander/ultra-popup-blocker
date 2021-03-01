@@ -41,6 +41,9 @@ const FakeWindow = {
   },
 };
 
+// Timeout before confirmation dialog closes automatically
+let timeleft = 15;
+
 /* ---------------------------------------------------------------- */
 
 // Add @domain to local storage
@@ -213,7 +216,7 @@ function createOpenPopupButton(logDiv, a, b, c) {
 function createCloseButton(logDiv) {
   createButton(
     logDiv,
-    'Deny &#10799;',
+    `Deny (${timeleft})`,
     'upb_close',
     () => {
       closeLogDiv(logDiv);
@@ -232,7 +235,7 @@ function createConfigButton(logDiv) {
     () => {
       openControlPanel();
     },
-    ' float:right;\
+    ' float: right;\
       margin: 0 10px 0 0;',
   );
 }
@@ -264,6 +267,22 @@ function createDialogMessage(logDiv, url) {
   currentLogDiv.style.display = 'block';
 }
 
+function createTimer(logDiv) {
+  console.log(timeleft);
+  if (timeleft === 15) {
+    const Timer = setInterval(() => {
+      document.getElementById('upb_close').innerHTML = `Deny (${timeleft})`;
+      timeleft -= 1;
+      if (timeleft < 0) {
+        clearInterval(Timer);
+        closeLogDiv(logDiv);
+        timeleft = 15;
+      }
+      console.log(timeleft);
+    }, 1000);
+  }
+}
+
 // This function will be called each time a script wants to open a new window
 function fakeWindowOpen(a, b, c) {
   const domain = getCurrentTopDomain();
@@ -275,6 +294,7 @@ function fakeWindowOpen(a, b, c) {
   createTrustButton(logDiv, domain, a, b, c);
   createCloseButton(logDiv);
   createConfigButton(logDiv);
+  createTimer(logDiv);
   return FakeWindow;
 }
 
