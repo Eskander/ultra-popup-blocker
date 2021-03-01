@@ -161,9 +161,10 @@ function addNewDomainButton() {
 
 // Permission bar; Create a button with inner text @text executing onclick
 // @clickCallback, appended as a child of @logDiv, with style @inlineStyle.
-function createButton(logDiv, text, clickCallback, inlineStyle) {
+function createButton(logDiv, text, id, clickCallback, inlineStyle) {
   const button = document.createElement('button');
   button.innerHTML = text;
+  button.id = id;
   button.style.cssText = `text-decoration: none;\
                           color: black;\
                           cursor: pointer;\
@@ -183,6 +184,7 @@ function createTrustButton(logDiv, domain, a, b, c) {
   createButton(
     logDiv,
     'Always Allow &#128504;',
+    'upb_trust',
     () => {
       addDomainToLocalStorage(domain);
       realWindowOpen(a, b, c);
@@ -198,6 +200,7 @@ function createOpenPopupButton(logDiv, a, b, c) {
   createButton(
     logDiv,
     'Allow &#8599;',
+    'upb_open',
     () => {
       realWindowOpen(a, b, c);
       closeLogDiv(logDiv);
@@ -211,6 +214,7 @@ function createCloseButton(logDiv) {
   createButton(
     logDiv,
     'Deny &#10799;',
+    'upb_close',
     () => {
       closeLogDiv(logDiv);
     },
@@ -224,6 +228,7 @@ function createConfigButton(logDiv) {
   createButton(
     logDiv,
     'Config &#9881;',
+    'upb_config',
     () => {
       openControlPanel();
     },
