@@ -270,7 +270,24 @@ function fakeWindowOpen(a, b, c) {
 
 // Override browser's "window.open" with our own implementation.
 function activateBlocker() {
-  global.open = fakeWindowOpen;
+  const TRUSTED = isCurrentDomainTrusted();
+  if (!TRUSTED) {
+    global.open = fakeWindowOpen;
+    console.log('[UPB] Current domain Not trusted.');
+  } else {
+    console.log('[UPB] Current domain Trusted. UPB disabled.');
+  }
+}
+
+function activateControlPanel() {
+  if (window.location.href === CONTROL_PANEL) {
+    // Add listener to the add button
+    addNewDomainButton();
+    // Show already stored elements in the list
+    const storedTrust = getTrustedDomains();
+    storedTrust.forEach(addDomainToPermissionList);
+    console.log(storedTrust);
+  }
 }
 
 /* ---------------------------------------------------------------- */
@@ -283,19 +300,5 @@ attachToExtensionMenu(
   },
 );
 
-// Only run trusting mechanism on the appropriate page
-if (window.location.href === CONTROL_PANEL) {
-  // Add listener to the add button
-  addNewDomainButton();
-  // Show already stored elements in the list
-  const storedTrust = getTrustedDomains();
-  storedTrust.forEach(addDomainToPermissionList);
-  console.log(storedTrust);
-}
-
-const disabled = isCurrentDomainTrusted();
-if (disabled) {
-  console.log('[UPB] Current domain was found on trust list. UPB disabled.');
-} else {
-  activateBlocker();
-}
+activateControlPanel();
+activateBlocker();
