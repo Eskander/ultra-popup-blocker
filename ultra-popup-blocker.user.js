@@ -87,7 +87,8 @@ function getLogDiv() {
                             padding: 5px 5px 5px 5px;\
                             font: status-bar;\
                             background-color: black;\
-                            color: white;';
+                            color: white;\
+                            cursor: help';
     document.body.appendChild(logDiv);
   }
   return logDiv;
@@ -233,9 +234,17 @@ function createConfigButton(logDiv) {
 // Permission bar; Display a permission prompt when a new popup is detected
 function createDialogMessage(logDiv, url) {
   const currentLogDiv = logDiv;
+  const domain = getCurrentTopDomain();
   let msg;
   let popupUrl;
+
   global.upb_counter += 1;
+
+  if (global.upb_counter === 1) {
+    msg = `<b>[UPB]</b> Allow <b><u>${domain}</u></b> to open a popup ?`;
+  } else {
+    msg = `<b>[UPB]</b> Allow <b><u>${domain}</u></b> to open a popup ? <b>(${global.upb_counter})</b>`;
+  }
 
   if (url[0] === '/') {
     popupUrl = document.domain + url;
@@ -243,13 +252,8 @@ function createDialogMessage(logDiv, url) {
     popupUrl = url;
   }
 
-  if (global.upb_counter === 1) {
-    msg = `<b>[UPB]</b> Blocked <b>1</b> popup: <u>${popupUrl}</u>`;
-  } else {
-    msg = `<b>[UPB]</b> Blocked <b>${global.upb_counter}</b> popups, last: <u>${popupUrl}</u>`;
-  }
-
   currentLogDiv.innerHTML = msg;
+  currentLogDiv.title = popupUrl;
   console.log(msg);
   currentLogDiv.style.display = 'block';
 }
