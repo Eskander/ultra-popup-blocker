@@ -3,11 +3,11 @@
 // @description  Configurable popup blocker that blocks all popup windows by default.
 // @namespace    https://github.com/eskander
 // @author       eskander
-// @version      2.99
+// @version      3.0
 // @include      *
 // @license      MIT
 // @homepage     https://github.com/eskander/ultra-popup-blocker
-// @supportURL   https://github.com/eskander/ultra-popup-blocker/issues
+// @supportURL   https://github.com/eskander/ultra-popup-blocker/issues/new
 // @compatible   firefox Tampermonkey recommended
 // @grant        GM_getValue
 // @grant        GM_setValue
@@ -87,7 +87,8 @@ function getLogDiv() {
                             padding: 5px 5px 5px 5px;\
                             font: status-bar;\
                             background-color: black;\
-                            color: white;';
+                            color: white;\
+                            cursor: help';
     document.body.appendChild(logDiv);
   }
   return logDiv;
@@ -177,24 +178,28 @@ function createButton(logDiv, text, clickCallback, inlineStyle) {
 }
 
 // Permission bar; Create a button (child of @logDiv) which onclick trusts @domain
-function createTrustButton(logDiv, domain) {
+function createTrustButton(logDiv, domain, a, b, c) {
   createButton(
     logDiv,
-    'Trust &#128504;',
+    'Always Allow &#128504;',
     () => {
       addDomainToLocalStorage(domain);
+      realWindowOpen(a, b, c);
+      closeLogDiv(logDiv);
+      global.open = realWindowOpen;
     },
     '',
   );
 }
 
 // Permission bar; Create a button (child of @logDiv) which onclick opens @domain
-function createOpenPopupButton(logDiv, args) {
+function createOpenPopupButton(logDiv, a, b, c) {
   createButton(
     logDiv,
-    'Open &#8599;',
+    'Allow &#8599;',
     () => {
-      realWindowOpen(...args);
+      realWindowOpen(a, b, c);
+      closeLogDiv(logDiv);
     },
     '',
   );
@@ -204,14 +209,12 @@ function createOpenPopupButton(logDiv, args) {
 function createCloseButton(logDiv) {
   createButton(
     logDiv,
-    'Close &#10799;',
+    'Deny &#10799;',
     () => {
       closeLogDiv(logDiv);
     },
     ' background-color: #a00;\
-      color: white;\
-      margin: 0 10px 0 0;\
-      float: right',
+      color: white;',
   );
 }
 
@@ -223,16 +226,25 @@ function createConfigButton(logDiv) {
     () => {
       openControlPanel();
     },
-    'float:right',
+    ' float:right;\
+      margin: 0 10px 0 0;',
   );
 }
 
 // Permission bar; Display a permission prompt when a new popup is detected
 function createDialogMessage(logDiv, url) {
   const currentLogDiv = logDiv;
+  const domain = getCurrentTopDomain();
   let msg;
   let popupUrl;
+
   global.upb_counter += 1;
+
+  if (global.upb_counter === 1) {
+    msg = `<b>[UPB]</b> Allow <b><u>${domain}</u></b> to open a popup ?`;
+  } else {
+    msg = `<b>[UPB]</b> Allow <b><u>${domain}</u></b> to open a popup ? <b>(${global.upb_counter})</b>`;
+  }
 
   if (url[0] === '/') {
     popupUrl = document.domain + url;
@@ -240,26 +252,21 @@ function createDialogMessage(logDiv, url) {
     popupUrl = url;
   }
 
-  if (global.upb_counter === 1) {
-    msg = `<b>[UPB]</b> Blocked <b>1</b> popup: <u>${popupUrl}</u>`;
-  } else {
-    msg = `<b>[UPB]</b> Blocked <b>${global.upb_counter}</b> popups, last: <u>${popupUrl}</u>`;
-  }
-
   currentLogDiv.innerHTML = msg;
+  currentLogDiv.title = popupUrl;
   console.log(msg);
   currentLogDiv.style.display = 'block';
 }
 
 // This function will be called each time a script wants to open a new window
-function fakeWindowOpen(...args) {
+function fakeWindowOpen(a, b, c) {
   const domain = getCurrentTopDomain();
-  const popupURL = args[0];
+  const popupURL = a;
   const logDiv = getLogDiv();
-  console.log(...args);
+  console.log(a, b, c);
   createDialogMessage(logDiv, popupURL);
-  createOpenPopupButton(logDiv, args);
-  createTrustButton(logDiv, domain);
+  createOpenPopupButton(logDiv, a, b, c);
+  createTrustButton(logDiv, domain, a, b, c);
   createCloseButton(logDiv);
   createConfigButton(logDiv);
   return FakeWindow;
@@ -267,32 +274,42 @@ function fakeWindowOpen(...args) {
 
 // Override browser's "window.open" with our own implementation.
 function activateBlocker() {
-  global.open = fakeWindowOpen;
+  const TRUSTED = isCurrentDomainTrusted();
+  if (!TRUSTED) {
+    global.open = fakeWindowOpen;
+    console.log('[UPB] Current domain Not trusted.');
+  } else {
+    console.log('[UPB] Current domain Trusted. UPB disabled.');
+  }
+}
+
+function activateControlPanel() {
+  if (window.location.href === CONTROL_PANEL) {
+    // Add listener to the add button
+    addNewDomainButton();
+    // Show already stored elements in the list
+    const storedTrust = getTrustedDomains();
+    storedTrust.forEach(addDomainToPermissionList);
+    console.log(storedTrust);
+  }
+}
+
+function activateExtensionMenu() {
+  attachToExtensionMenu(
+    'Configure popup permissions',
+    () => {
+      openControlPanel();
+    },
+  );
 }
 
 /* ---------------------------------------------------------------- */
 
 // Add configure link to Tampermonkey's menu
-attachToExtensionMenu(
-  'Configure popup permissions',
-  () => {
-    openControlPanel();
-  },
-);
+activateExtensionMenu();
 
-// Only run trusting mechanism on the appropriate page
-if (window.location.href === CONTROL_PANEL) {
-  // Add listener to the add button
-  addNewDomainButton();
-  // Show already stored elements in the list
-  const storedTrust = getTrustedDomains();
-  storedTrust.forEach(addDomainToPermissionList);
-  console.log(storedTrust);
-}
+// Initiate Control Panel logic
+activateControlPanel();
 
-const disabled = isCurrentDomainTrusted();
-if (disabled) {
-  console.log('[UPB] Current domain was found on trust list. UPB disabled.');
-} else {
-  activateBlocker();
-}
+// Start Popup Blocker
+activateBlocker();
