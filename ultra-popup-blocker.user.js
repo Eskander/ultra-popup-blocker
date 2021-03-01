@@ -180,7 +180,7 @@ function createButton(logDiv, text, clickCallback, inlineStyle) {
 function createTrustButton(logDiv, domain, a, b, c) {
   createButton(
     logDiv,
-    'Trust &#128504;',
+    'Always Allow &#128504;',
     () => {
       addDomainToLocalStorage(domain);
       realWindowOpen(a, b, c);
@@ -195,7 +195,7 @@ function createTrustButton(logDiv, domain, a, b, c) {
 function createOpenPopupButton(logDiv, a, b, c) {
   createButton(
     logDiv,
-    'Open &#8599;',
+    'Allow &#8599;',
     () => {
       realWindowOpen(a, b, c);
       closeLogDiv(logDiv);
@@ -208,14 +208,12 @@ function createOpenPopupButton(logDiv, a, b, c) {
 function createCloseButton(logDiv) {
   createButton(
     logDiv,
-    'Close &#10799;',
+    'Deny &#10799;',
     () => {
       closeLogDiv(logDiv);
     },
     ' background-color: #a00;\
-      color: white;\
-      margin: 0 10px 0 0;\
-      float: right',
+      color: white;',
   );
 }
 
