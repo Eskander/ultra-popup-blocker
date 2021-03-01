@@ -225,7 +225,8 @@ function createConfigButton(logDiv) {
     () => {
       openControlPanel();
     },
-    'float:right',
+    ' float:right;\
+      margin: 0 10px 0 0;',
   );
 }
 
