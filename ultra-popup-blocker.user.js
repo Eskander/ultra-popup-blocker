@@ -177,7 +177,7 @@ function createButton(logDiv, text, clickCallback, inlineStyle) {
 }
 
 // Permission bar; Create a button (child of @logDiv) which onclick trusts @domain
-function createTrustButton(logDiv, domain) {
+function createTrustButton(logDiv, domain, a, b, c) {
   createButton(
     logDiv,
     'Trust &#128504;',
@@ -189,12 +189,12 @@ function createTrustButton(logDiv, domain) {
 }
 
 // Permission bar; Create a button (child of @logDiv) which onclick opens @domain
-function createOpenPopupButton(logDiv, args) {
+function createOpenPopupButton(logDiv, a, b, c) {
   createButton(
     logDiv,
     'Open &#8599;',
     () => {
-      realWindowOpen(...args);
+      realWindowOpen(a, b, c);
     },
     '',
   );
@@ -252,14 +252,14 @@ function createDialogMessage(logDiv, url) {
 }
 
 // This function will be called each time a script wants to open a new window
-function fakeWindowOpen(...args) {
+function fakeWindowOpen(a, b, c) {
   const domain = getCurrentTopDomain();
-  const popupURL = args[0];
+  const popupURL = a;
   const logDiv = getLogDiv();
-  console.log(...args);
+  console.log(a, b, c);
   createDialogMessage(logDiv, popupURL);
-  createOpenPopupButton(logDiv, args);
-  createTrustButton(logDiv, domain);
+  createOpenPopupButton(logDiv, a, b, c);
+  createTrustButton(logDiv, domain, a, b, c);
   createCloseButton(logDiv);
   createConfigButton(logDiv);
   return FakeWindow;
