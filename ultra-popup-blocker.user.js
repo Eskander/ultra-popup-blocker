@@ -6,7 +6,7 @@
 // @version      3.1
 // @include      *
 // @license      MIT
-// @homepage     https://github.com/Eskander/ultra-popup-blocker
+// @homepage     https://eskander.github.io/ultra-popup-blocker/
 // @supportURL   https://github.com/Eskander/ultra-popup-blocker/issues/new
 // @compatible   firefox Tampermonkey recommended
 // @compatible   chrome Tampermonkey recommended
