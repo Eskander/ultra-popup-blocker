@@ -25,7 +25,7 @@ Use the permission manager provided with Ultra Popup Blocker to set which websit
 # [![GreasyFork][button1]][link1] [![OpenUserJS][button2]][link2] [![GitHub][button3]][link3]
 
   [ext]: https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
-  [whtlstid]: #managing-whitelisted-domains
+  [whtlstid]: #managing-permissions
 
   [button1]: https://img.shields.io/badge/Install-GreasyFork-red.svg?longCache=true&style=for-the-badge&
   [link1]: https://greasyfork.org/en/scripts/387937-ultra-popup-blocker

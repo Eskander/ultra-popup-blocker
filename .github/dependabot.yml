@@ -9,4 +9,12 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    # Raise pull requests for version updates
+    # to npm against the `dev` branch
     target-branch: "dev"
+    # Add assignees
+    assignees:
+      - "Eskander"
+    # Add reviewers
+    reviewers:
+      - "Eskander"
