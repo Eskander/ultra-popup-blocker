@@ -1,4 +1,4 @@
-theme: jekyll-theme-cayman
 title: Ultra Popup Blocker
 description: Configurable popup blocker that blocks all popup windows by default with a permission model. 
+remote_theme: lewismiddleton/cayman-dark
 #google_analytics:
