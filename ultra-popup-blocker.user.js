@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Ultra Popup Blocker
 // @description  Configurable popup blocker that blocks all popup windows by default.
-// @namespace    https://github.com/Eskander
+// @namespace    https://github.com/eskander
 // @author       Eskander
 // @version      3.2
 // @include      *
