@@ -3,7 +3,7 @@
 // @description  Configurable popup blocker that blocks all popup windows by default.
 // @namespace    https://github.com/eskander
 // @author       Eskander
-// @version      3.2.1
+// @version      3.3
 // @include      *
 // @license      MIT
 // @homepage     https://eskander.github.io/ultra-popup-blocker/
