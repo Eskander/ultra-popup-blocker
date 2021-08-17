@@ -34,5 +34,5 @@ Use the permission manager provided with Ultra Popup Blocker to set which websit
   [link2]: https://openuserjs.org/scripts/eskander/Ultra_Popup_Blocker
   
   [button3]: https://img.shields.io/badge/Install-GitHub-lightgrey.svg?longCache=true&style=for-the-badge
-  [link3]: https://github.com/Eskander/ultra-popup-blocker/raw/master/ultra-popup-blocker.user.js
+  [link3]: https://github.com/Eskander/ultra-popup-blocker/raw/main/ultra-popup-blocker.user.js
   
