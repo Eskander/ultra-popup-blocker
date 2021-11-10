@@ -18,7 +18,7 @@
   "homepage": "https://eskander.github.io/ultra-popup-blocker/",
   "devDependencies": {
     "eslint": "^8.2.0",
-    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.25.3"
   }
 }
