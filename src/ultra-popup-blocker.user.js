@@ -21,7 +21,7 @@
 /* ---------------------------------------------------------------- */
 
 const PERMISSION_DIALOG_ID = 'ultra_popup_blocker'; // HTML ID in the page
-const CONTROL_PANEL = 'https://eskander.tn/ultra-popup-blocker/settings/';
+const CONTROL_PANEL = 'https://eskander.tn/ultra-popup-blocker/settings.html';
 
 // Reference to page's "window" through GreaseMonkey
 const global = unsafeWindow;
