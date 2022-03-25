@@ -15,7 +15,7 @@
   "bugs": {
     "url": "https://github.com/Eskander/ultra-popup-blocker/issues"
   },
-  "homepage": "https://eskander.github.io/ultra-popup-blocker/",
+  "homepage": "https://eskander.tn/ultra-popup-blocker/",
   "devDependencies": {
     "eslint": "^8.11.0",
     "eslint-config-airbnb-base": "^15.0.0",
