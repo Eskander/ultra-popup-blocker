@@ -3,10 +3,10 @@
 // @description  Configurable popup blocker that blocks all popup windows by default.
 // @namespace    https://github.com/eskander
 // @author       Eskander
-// @version      3.3
+// @version      3.4
 // @include      *
 // @license      MIT
-// @homepage     https://eskander.github.io/ultra-popup-blocker/
+// @homepage     https://eskander.tn/ultra-popup-blocker/
 // @supportURL   https://github.com/Eskander/ultra-popup-blocker/issues/new
 // @compatible   firefox Tampermonkey recommended
 // @compatible   chrome Tampermonkey recommended
@@ -21,7 +21,7 @@
 /* ---------------------------------------------------------------- */
 
 const PERMISSION_DIALOG_ID = 'ultra_popup_blocker'; // HTML ID in the page
-const CONTROL_PANEL = 'https://eskander.github.io/ultra-popup-blocker/settings/';
+const CONTROL_PANEL = 'https://eskander.tn/ultra-popup-blocker/settings/';
 
 // Reference to page's "window" through GreaseMonkey
 const global = unsafeWindow;
