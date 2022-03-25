@@ -3,7 +3,7 @@ Ultra Popup Blocker (or UPB for short) is a lightweight Popup Blocker that aims 
 **all popup windows** by default, (even good, unharmful, user-initiated ones) on a permission
 model, while providing a clean [Permission manager][whtlstid] for easy configuration.
 
-<p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/master/screenshots/bottom-bar.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/bottom-bar.png"></p>
 
 ### Why another popup blocker?
 Built-in Firefox and Chrome popup blockers blocks only the popups that were created automatically via scripts on page load etc. When you click on a button on the page, it won't block it.
@@ -16,7 +16,7 @@ Here, we override 'window.open' with our own implementation which prompts the us
 ### Managing permissions
 Use the permission manager provided with Ultra Popup Blocker to set which websites are trusted to open popups freely.
 
-<p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/master/screenshots/whitelist-config.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/whitelist-config.png"></p>
 
 ### Install instructions
 1. Get a userscript manager from your browser's addon store. I personally use [Tampermonkey on Firefox ➚][ext].
@@ -34,5 +34,5 @@ Use the permission manager provided with Ultra Popup Blocker to set which websit
   [link2]: https://openuserjs.org/scripts/eskander/Ultra_Popup_Blocker
   
   [button3]: https://img.shields.io/badge/Install-GitHub-lightgrey.svg?longCache=true&style=for-the-badge
-  [link3]: https://github.com/Eskander/ultra-popup-blocker/raw/main/ultra-popup-blocker.user.js
+  [link3]: https://github.com/Eskander/ultra-popup-blocker/raw/main/src/ultra-popup-blocker.user.js
   
