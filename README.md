@@ -19,12 +19,19 @@ Use the permission manager provided with Ultra Popup Blocker to set which websit
 <p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/whitelist-config.png"></p>
 
 ### Install instructions
-1. Get a userscript manager from your browser's addon store. I personally use [Tampermonkey on Firefox ➚][ext].
+1. Get a userscript manager from your browser's addon store:
+   - Firefox: Install [Violentmonkey][ff_ext1], [Tampermonkey][ff_ext2] or [Greasemonkey][ff_ext3].
+   - Chrome: Install [Violentmonkey][cr_ext1] or [Tampermonkey][cr_ext2].
 2. Add **Ultra Popup Blocker** from one of the following sources:
 
 # [![GreasyFork][button1]][link1] [![OpenUserJS][button2]][link2] [![GitHub][button3]][link3]
 
-  [ext]: https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
+  [ff_ext1]: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
+  [ff_ext2]: https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
+  [ff_ext3]: https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/
+  [cr_ext1]: https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag
+  [cr_ext2]: https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo
+  
   [whtlstid]: #managing-permissions
 
   [button1]: https://img.shields.io/badge/Install-GreasyFork-red.svg?longCache=true&style=for-the-badge&
