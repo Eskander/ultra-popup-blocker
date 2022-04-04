@@ -79,6 +79,13 @@ ul li:hover {
     clear: both;
 }
 
+/* Style the footer */
+.footer {
+    background-color: #000000;
+    padding: 5px 40px;
+    color: white;
+}
+
 /* Style the input */
 input {
     margin: 0;
