@@ -1,4 +1,8 @@
 # Ultra Popup Blocker
+
+> **Warning**
+> No further development is planned. The script will continue to work as is.
+
 Ultra Popup Blocker (or UPB for short) is a lightweight Popup Blocker that aims to block
 **all popup windows** by default, (even good, unharmful, user-initiated ones) on a permission
 model, while providing a clean [Permission manager][whtlstid] for easy configuration.
