@@ -18,5 +18,10 @@
   "homepage": "https://eskander.tn/ultra-popup-blocker/",
   "devDependencies": {
     "standard": "^17.1.2"
+  },
+  "standard": {
+    "env": [
+      "greasemonkey"
+    ]
   }
 }
