@@ -8,8 +8,8 @@
 // @license      MIT
 // @homepage     https://github.com/Eskander/ultra-popup-blocker
 // @supportURL   https://github.com/Eskander/ultra-popup-blocker/issues/new
-// @compatible   firefox Tampermonkey recommended
-// @compatible   chrome Tampermonkey recommended
+// @compatible   firefox Tampermonkey / Violentmonkey
+// @compatible   chrome Tampermonkey / Violentmonkey
 // @grant        GM.getValue
 // @grant        GM.setValue
 // @grant        GM.deleteValue
