@@ -1,30 +1,28 @@
 # Ultra Popup Blocker
 
-> [!WARNING]  
-> No further development is planned. The script may continue to work as is.
-
-Ultra Popup Blocker (or UPB for short) is a lightweight Popup Blocker that aims to block
-**all popup windows** by default, (even good, unharmful, user-initiated ones) on a permission
-model, while providing a clean [Permission manager][whtlstid] for easy configuration.
+Ultra Popup Blocker (or UPB for short) is a lightweight Popup Blocker that aims to block **all popup windows** by default (even good, unharmful, user-initiated ones) unless permission is granted, while providing a clean [Permission manager][whtlstid] for configuration.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/bottom-bar.png"></p>
 
+> [!Note]  
+> Project in maintenance mode, no new features are planned.
+
+[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
+
 ### Why another popup blocker?
-Built-in Firefox and Chrome popup blockers blocks only the popups that were created automatically via scripts on page load etc. When you click on a button on the page, it won't block it.
-However, malicious websites can create JS code that will launch the popups whenever you click on any blank space on the page for instance.
+Built-in Firefox and Chrome popup blockers block popups that are created automatically (via scripts, on page load, etc...), while popups linked to user actions are allowed. However, some annoying websites will abuse this to spam you with popups anywhere you click in their pages, even seemingly blank places.
 
 ### How does it work?
-In JavaScript, functions are first-order citizens. It means you can store a function in a variable and pass it freely. You can also modify the native functions provided by the browser, like 'window.open'.
-Here, we override 'window.open' with our own implementation which prompts the user to see whether he really wants to open a popup window.
+In JavaScript, functions are first-order citizens. It means you can store a function in a variable and pass it freely. You can also modify the native functions provided by the browser, like 'window.open'. Here, we override 'window.open' with our own implementation which prompts the user to see whether they really want to open a popup window. Note that this is not a bullet proof solution. If you want a comprehensive blocker, use uBlock Origin with the _right lists_.
 
 ### Managing permissions
-Use the permission manager provided with Ultra Popup Blocker to set which websites are trusted to open popups freely.
+The permission manager included with Ultra Popup Blocker lists which websites you trusted to open popups freely.
 
 <p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/whitelist-config.png"></p>
 
 ### Install instructions
 1. Get a userscript manager from your browser's addon store:
-   - Firefox: Install [Violentmonkey][ff_ext1], [Tampermonkey][ff_ext2] or [Greasemonkey][ff_ext3].
+   - Firefox: Install [Violentmonkey][ff_ext1] or [Tampermonkey][ff_ext2]
    - Chrome: Install [Violentmonkey][cr_ext1] or [Tampermonkey][cr_ext2].
 2. Add **Ultra Popup Blocker** from one of the following sources:
 
@@ -32,7 +30,6 @@ Use the permission manager provided with Ultra Popup Blocker to set which websit
 
   [ff_ext1]: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
   [ff_ext2]: https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
-  [ff_ext3]: https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/
   [cr_ext1]: https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag
   [cr_ext2]: https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo
   

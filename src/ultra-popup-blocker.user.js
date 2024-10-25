@@ -1,341 +1,398 @@
 // ==UserScript==
 // @name         Ultra Popup Blocker
 // @description  Configurable popup blocker that blocks all popup windows by default.
-// @namespace    https://github.com/eskander
+// @namespace    eskander.github.io
 // @author       Eskander
-// @version      3.5
+// @version      4.0
 // @include      *
 // @license      MIT
-// @homepage     https://eskander.tn/ultra-popup-blocker/
+// @homepage     https://github.com/Eskander/ultra-popup-blocker
 // @supportURL   https://github.com/Eskander/ultra-popup-blocker/issues/new
-// @compatible   firefox Tampermonkey recommended
-// @compatible   chrome Tampermonkey recommended
-// @grant        GM_getValue
-// @grant        GM_setValue
-// @grant        GM_deleteValue
-// @grant        GM_listValues
-// @grant        GM_openInTab
-// @grant        GM_registerMenuCommand
+// @compatible   firefox Tampermonkey / Violentmonkey
+// @compatible   chrome Tampermonkey / Violentmonkey
+// @grant        GM.getValue
+// @grant        GM.setValue
+// @grant        GM.deleteValue
+// @grant        GM.listValues
+// @grant        GM.registerMenuCommand
 // ==/UserScript==
 
-/* ---------------------------------------------------------------- */
+/* Constants and Globals */
+const CONSTANTS = {
+  TIMEOUT_SECONDS: 15,
+  TRUNCATE_LENGTH: 50,
+  MODAL_WIDTH: '400px'
+}
 
-const PERMISSION_DIALOG_ID = 'ultra_popup_blocker'; // HTML ID in the page
-const CONTROL_PANEL = 'https://eskander.tn/ultra-popup-blocker/settings.html';
+const STYLES = {
+  modal: `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    width: ${CONSTANTS.MODAL_WIDTH};
+    border: 1px solid black;
+    z-index: 100000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  `,
+  modalHeader: `
+    background-color: black;
+    padding: 30px 40px;
+    color: white;
+    text-align: center;
+  `,
+  modalFooter: `
+    background-color: black;
+    padding: 5px 40px;
+    color: white;
+    text-align: center;
+  `,
+  button: `
+    margin-right: 20px;
+    padding: 5px;
+    cursor: pointer;
+  `,
+  notificationBar: `
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 99999;
+    width: 100%;
+    padding: 5px;
+    font: status-bar;
+    background-color: black;
+    color: white;
+  `,
+  listItem: `
+    padding: 12px 8px 12px 40px;
+    font-size: 18px;
+    background-color: white;
+    border-bottom: 1px solid #ccc;
+    position: relative;
+    transition: 0.2s;
+  `,
+  removeButton: `
+    cursor: pointer;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 12px 16px;
+  `
+}
 
-// Reference to page's "window" through GreaseMonkey
-const global = unsafeWindow;
-global.upb_counter = 0;
+// Reference to page's window through GreaseMonkey
+const global = unsafeWindow
+global.upbCounter = 0
 
-// Storing a reference to real "window.open" method in case we wanted it
-const realWindowOpen = global.open;
+// Store reference to original window.open
+const realWindowOpen = global.open
 
-// We need to return the fake window to not encounter JS runtime error when the popup originator
-// page wants to call focus() or blur().
+// Fake window object to prevent JS errors
 const FakeWindow = {
-  blur() {
-    return false;
-  },
-  focus() {
-    return false;
-  },
-};
-
-// Timeout before confirmation dialog closes automatically
-let timeleft = 15;
-
-/* ---------------------------------------------------------------- */
-
-// Add @domain to local storage
-function addDomainToLocalStorage(domain) {
-  GM_setValue(`trusted_${domain}`, true);
+  blur: () => false,
+  focus: () => false
 }
 
-// Remove @domain from local storage
-function removeDomainFromLocalStorage(domain) {
-  GM_deleteValue(`trusted_${domain}`);
-  GM_deleteValue(`${domain}`);
-}
-
-// Return true if @domain is trusted
-function isDomainTrusted(domain) {
-  return GM_getValue(`trusted_${domain}`);
-}
-
-// Return an Array of trusted domains
-function getTrustedDomains() {
-  return GM_listValues();
-}
-
-// Open permission manager in new tab
-function openControlPanel() {
-  GM_openInTab(CONTROL_PANEL, false);
-}
-
-// Add a link to permission manager in extensions' popup menu
-function attachToExtensionMenu(name, callback) {
-  GM_registerMenuCommand(name, callback);
-}
-
-// Permission bar; Return permission dialog, or create it if needed.
-function getLogDiv() {
-  let logDiv = document.getElementById(PERMISSION_DIALOG_ID);
-  if (!logDiv) {
-    logDiv = document.createElement('div');
-    logDiv.setAttribute('id', PERMISSION_DIALOG_ID);
-    logDiv.style.cssText = 'position: fixed;\
-                            bottom: 0;\
-                            left: 0;\
-                            z-index: 99999;\
-                            width: 100%;\
-                            padding: 5px 5px 5px 5px;\
-                            font: status-bar;\
-                            background-color: black;\
-                            color: white;\
-                            cursor: help';
-    document.body.appendChild(logDiv);
+/* Domain Management */
+class DomainManager {
+  static async getCurrentTopDomain () {
+    const [domainName, topLevelDomain] = document.location.hostname.split('.').slice(-2)
+    return `${domainName}.${topLevelDomain}`
   }
-  return logDiv;
+
+  static async isCurrentDomainTrusted () {
+    const domain = await this.getCurrentTopDomain()
+    return await GM.getValue(domain)
+  }
+
+  static async addTrustedDomain (domain) {
+    await GM.setValue(domain, true)
+  }
+
+  static async removeTrustedDomain (domain) {
+    await GM.deleteValue(domain)
+  }
+
+  static async getTrustedDomains () {
+    return await GM.listValues()
+  }
 }
 
-// Permission bar; Hide dialog
-function closeLogDiv(logDiv) {
-  const currentLogDiv = logDiv;
-  currentLogDiv.style.display = 'none';
+/* UI Components */
+class UIComponents {
+  static createButton (text, id, clickHandler, color) {
+    const button = document.createElement('button')
+    button.id = `upb-${id}`
+    button.innerHTML = text
+    button.style.cssText = `${STYLES.button} color: ${color};`
+    button.addEventListener('click', clickHandler)
+    return button
+  }
+
+  static createNotificationBar () {
+    const bar = document.createElement('div')
+    bar.id = 'upb-notification-bar'
+    bar.style.cssText = STYLES.notificationBar
+    return bar
+  }
+
+  static createModalElement () {
+    const modal = document.createElement('div')
+    modal.id = 'upb-trusted-domains-modal'
+    modal.style.cssText = STYLES.modal
+    return modal
+  }
+
+  static updateDenyButtonText (button, timeLeft) {
+    if (button) {
+      button.innerHTML = `🔴 Deny (${timeLeft})`
+    }
+  }
 }
 
-// Return current top domain. eg: github.com
-function getCurrentTopDomain() {
-  const hostnameArray = document.location.hostname.split('.');
-  const topLevelDomain = hostnameArray[hostnameArray.length - 1];
-  const domainName = hostnameArray[hostnameArray.length - 2];
-  const currentDomain = `${domainName}.${topLevelDomain}`;
-  return currentDomain;
-}
+/* Notification Bar */
+class NotificationBar {
+  constructor () {
+    this.element = document.getElementById('upb-notification-bar') || this.createElement()
+    this.timeLeft = CONSTANTS.TIMEOUT_SECONDS
+    this.denyTimeoutId = null
+    this.denyButton = null
+  }
 
-// Return true if current domain has been trusted by the user
-function isCurrentDomainTrusted() {
-  const domain = getCurrentTopDomain();
-  return isDomainTrusted(domain);
-}
+  createElement () {
+    const bar = UIComponents.createNotificationBar()
+    document.body.appendChild(bar)
+    return bar
+  }
 
-// Permission manager; Create a button to remove domain from permissions list
-function removeDomainFromPermissionList() {
-  const div = this.parentElement;
-  console.log(div);
-  const domain = div.innerText.replace('\n\u00D7', '');
-  removeDomainFromLocalStorage(domain);
-  div.style.display = 'none';
-  console.log(`[UPB] Domain removed from trust: ${domain}`);
-}
+  show (url) {
+    this.element.style.display = 'block'
+    this.setMessage(url)
+    this.addButtons(url)
+    this.startDenyTimeout()
+  }
 
-// Permission manager; Add a new domain to permissions list
-function addDomainToPermissionList(domain) {
-  const domainName = domain.replace('trusted_', '');
-  const li = document.createElement('li');
-  const t = document.createTextNode(domainName);
-  li.appendChild(t);
-  document.getElementById('List').appendChild(li);
-  // Add a remove button to li
-  const span = document.createElement('SPAN');
-  const txt = document.createTextNode('\u00D7');
-  span.className = 'close';
-  span.appendChild(txt);
-  span.onclick = removeDomainFromPermissionList;
-  li.appendChild(span);
-  // Add domain to localStorage
-  addDomainToLocalStorage(domainName);
-  console.log(`[UPB] Domain added to trust: ${domainName}`);
-}
+  hide () {
+    this.element.style.display = 'none'
+    global.upbCounter = 0
+    this.clearDenyTimeout()
+  }
 
-// Permission manager; Button to add a new domain to permissions list
-function addNewDomainButton() {
-  document.getElementsByClassName('addBtn')[0].addEventListener(
-    'click',
-    () => {
-      const DOMAIN = document.getElementById('Input').value;
-      if (DOMAIN !== '') {
-        addDomainToPermissionList(DOMAIN);
+  clearDenyTimeout () {
+    if (this.denyTimeoutId) {
+      clearInterval(this.denyTimeoutId)
+      this.denyTimeoutId = null
+    }
+  }
+
+  setMessage (url) {
+    const truncatedUrl = url.length > CONSTANTS.TRUNCATE_LENGTH
+      ? `${url.substring(0, CONSTANTS.TRUNCATE_LENGTH)}..`
+      : url
+
+    this.element.innerHTML = `
+      Ultra Popup Blocker: This site is attempting to open <b>${global.upbCounter}</b> popup(s).
+      <a href="${url}" style="color:yellow;">${truncatedUrl}</a>
+    `
+  }
+
+  async addButtons (url) {
+    const currentDomain = await DomainManager.getCurrentTopDomain()
+
+    // Allow Once
+    this.element.appendChild(
+      UIComponents.createButton('🟢 Allow Once', 'allow', () => {
+        realWindowOpen(url)
+        this.hide()
+      }, 'green')
+    )
+
+    // Always Allow
+    this.element.appendChild(
+      UIComponents.createButton('🔵 Always Allow', 'trust', async () => {
+        await DomainManager.addTrustedDomain(currentDomain)
+        realWindowOpen(url)
+        this.hide()
+        global.open = realWindowOpen
+      }, 'blue')
+    )
+
+    // Deny
+    this.denyButton = UIComponents.createButton('🔴 Deny (15)', 'deny', () => {
+      this.hide()
+      PopupBlocker.initialize()
+    }, 'red')
+    this.element.appendChild(this.denyButton)
+
+    // Config
+    const configButton = UIComponents.createButton('🟠 Config', 'config', () => {
+      new TrustedDomainsModal().show()
+    }, 'orange')
+    configButton.style.float = 'right'
+    this.element.appendChild(configButton)
+  }
+
+  startDenyTimeout () {
+    this.timeLeft = CONSTANTS.TIMEOUT_SECONDS
+    this.clearDenyTimeout()
+
+    // Initial update
+    UIComponents.updateDenyButtonText(this.denyButton, this.timeLeft)
+
+    this.denyTimeoutId = setInterval(() => {
+      this.timeLeft--
+      UIComponents.updateDenyButtonText(this.denyButton, this.timeLeft)
+
+      if (this.timeLeft <= 0) {
+        this.clearDenyTimeout()
+        this.hide()
+        PopupBlocker.initialize()
       }
-      document.getElementById('Input').value = '';
-    },
-  );
-}
-
-// Permission bar; Create a button with inner text @text executing onclick
-// @clickCallback, appended as a child of @logDiv, with style @inlineStyle.
-function createButton(logDiv, text, id, clickCallback, inlineStyle) {
-  const button = document.createElement('button');
-  button.innerHTML = text;
-  button.id = id;
-  button.style.cssText = `text-decoration: none;\
-                          color: black;\
-                          cursor: pointer;\
-                          margin: 0 5px;\
-                          padding: 1px 3px;\
-                          background-color: rgb(255, 255, 255);\
-                          border-width: 0px;\
-                          border-radius: 5px;\
-                          color: black;\
-                          ${inlineStyle}`;
-  logDiv.appendChild(button);
-  button.addEventListener('click', clickCallback);
-}
-
-// Permission bar; Create a button (child of @logDiv) which onclick trusts @domain
-function createTrustButton(logDiv, domain, a, b, c) {
-  createButton(
-    logDiv,
-    'Always Allow &#128504;',
-    'upb_trust',
-    () => {
-      addDomainToLocalStorage(domain);
-      realWindowOpen(a, b, c);
-      closeLogDiv(logDiv);
-      global.open = realWindowOpen;
-    },
-    '',
-  );
-}
-
-// Permission bar; Create a button (child of @logDiv) which onclick opens @domain
-function createOpenPopupButton(logDiv, a, b, c) {
-  createButton(
-    logDiv,
-    'Allow &#8599;',
-    'upb_open',
-    () => {
-      realWindowOpen(a, b, c);
-      closeLogDiv(logDiv);
-    },
-    '',
-  );
-}
-
-// Permission bar; Create a button (child of @logDiv) which onclick hides @logDiv
-function createCloseButton(logDiv) {
-  createButton(
-    logDiv,
-    `Deny (${timeleft})`,
-    'upb_close',
-    () => {
-      closeLogDiv(logDiv);
-    },
-    ' background-color: #a00;\
-      color: white;',
-  );
-}
-
-// Permission bar; Create a button (child of @logDiv) which onclick opens @controlPanel
-function createConfigButton(logDiv) {
-  createButton(
-    logDiv,
-    'Config &#9881;',
-    'upb_config',
-    () => {
-      openControlPanel();
-    },
-    ' float: right;\
-      margin: 0 10px 0 0;',
-  );
-}
-
-// Permission bar; Display a permission prompt when a new popup is detected
-function createDialogMessage(logDiv, url) {
-  const currentLogDiv = logDiv;
-  const domain = getCurrentTopDomain();
-  let msg;
-  let popupUrl;
-
-  global.upb_counter += 1;
-
-  if (global.upb_counter === 1) {
-    msg = `<b>[UPB]</b> Allow <b><u>${domain}</u></b> to open a popup ?`;
-  } else {
-    msg = `<b>[UPB]</b> Allow <b><u>${domain}</u></b> to open a popup ? <b>(${global.upb_counter})</b>`;
+    }, 1000)
   }
 
-  if (url[0] === '/') {
-    popupUrl = document.domain + url;
-  } else {
-    popupUrl = url;
+  resetTimeout () {
+    if (this.element.style.display === 'block') {
+      this.startDenyTimeout()
+    }
   }
-
-  currentLogDiv.innerHTML = msg;
-  currentLogDiv.title = popupUrl;
-  console.log(msg);
-  currentLogDiv.style.display = 'block';
 }
 
-function createTimer(logDiv) {
-  console.log(timeleft);
-  if (timeleft === 15) {
-    const Timer = setInterval(() => {
-      document.getElementById('upb_close').innerHTML = `Deny (${timeleft})`;
-      timeleft -= 1;
-      if (timeleft < 0) {
-        clearInterval(Timer);
-        closeLogDiv(logDiv);
-        timeleft = 15;
+/* Trusted Domains Modal */
+class TrustedDomainsModal {
+  constructor () {
+    this.element = document.getElementById('upb-trusted-domains-modal') || this.createElement()
+  }
+
+  createElement () {
+    const modal = UIComponents.createModalElement()
+
+    const header = document.createElement('div')
+    header.style.cssText = STYLES.modalHeader
+    header.innerHTML = `
+      <h2>Ultra Popup Blocker</h2>
+      <h3 style="text-align:left;margin-top:10px;">Trusted websites:</h3>
+    `
+    modal.appendChild(header)
+
+    const footer = document.createElement('div')
+    footer.style.cssText = STYLES.modalFooter
+
+    const closeButton = document.createElement('button')
+    closeButton.innerText = 'Close'
+    closeButton.style.cssText = `
+      background-color: gray;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+    `
+    closeButton.onclick = () => this.hide()
+
+    footer.appendChild(closeButton)
+    modal.appendChild(footer)
+
+    document.body.appendChild(modal)
+    return modal
+  }
+
+  show () {
+    this.refreshDomainsList()
+    this.element.style.display = 'block'
+  }
+
+  hide () {
+    this.element.style.display = 'none'
+  }
+
+  async refreshDomainsList () {
+    const existingList = document.getElementById('upb-domains-list')
+    if (existingList) existingList.remove()
+
+    const list = document.createElement('ul')
+    list.id = 'upb-domains-list'
+    list.style.cssText = 'margin:0;padding:0;list-style-type:none;'
+
+    const trustedDomains = await DomainManager.getTrustedDomains()
+
+    if (trustedDomains.length === 0) {
+      const message = document.createElement('p')
+      message.style.padding = '20px'
+      message.innerText = 'No allowed websites'
+      list.appendChild(message)
+    } else {
+      for (const domain of trustedDomains) {
+        await this.addDomainListItem(list, domain)
       }
-      console.log(timeleft);
-    }, 1000);
+    }
+
+    this.element.insertBefore(list, this.element.querySelector('div:last-child'))
+  }
+
+  async addDomainListItem (list, domain) {
+    const item = document.createElement('li')
+    item.style.cssText = STYLES.listItem
+    item.innerText = domain
+
+    item.addEventListener('mouseover', () => {
+      item.style.backgroundColor = '#ddd'
+    })
+    item.addEventListener('mouseout', () => {
+      item.style.backgroundColor = 'white'
+    })
+
+    const removeButton = document.createElement('span')
+    removeButton.style.cssText = STYLES.removeButton
+    removeButton.innerText = '×'
+
+    removeButton.addEventListener('mouseover', () => {
+      removeButton.style.backgroundColor = '#f44336'
+      removeButton.style.color = 'white'
+    })
+    removeButton.addEventListener('mouseout', () => {
+      removeButton.style.backgroundColor = 'transparent'
+      removeButton.style.color = 'black'
+    })
+    removeButton.addEventListener('click', async () => {
+      await DomainManager.removeTrustedDomain(domain)
+      item.remove()
+      PopupBlocker.initialize()
+    })
+
+    item.appendChild(removeButton)
+    list.appendChild(item)
   }
 }
 
-// This function will be called each time a script wants to open a new window
-function fakeWindowOpen(a, b, c) {
-  const domain = getCurrentTopDomain();
-  const popupURL = a;
-  const logDiv = getLogDiv();
-  console.log(a, b, c);
-  createDialogMessage(logDiv, popupURL);
-  createOpenPopupButton(logDiv, a, b, c);
-  createTrustButton(logDiv, domain, a, b, c);
-  createCloseButton(logDiv);
-  createConfigButton(logDiv);
-  createTimer(logDiv);
-  return FakeWindow;
-}
+/* Popup Blocker */
+class PopupBlocker {
+  static async initialize () {
+    if (global.open !== realWindowOpen) return
 
-// Override browser's "window.open" with our own implementation.
-function activateBlocker() {
-  const TRUSTED = isCurrentDomainTrusted();
-  if (!TRUSTED) {
-    global.open = fakeWindowOpen;
-    console.log('[UPB] Current domain Not trusted.');
-  } else {
-    console.log('[UPB] Current domain Trusted. UPB disabled.');
+    if (await DomainManager.isCurrentDomainTrusted()) {
+      const domain = await DomainManager.getCurrentTopDomain()
+      console.log(`[UPB] Trusted domain: ${domain}`)
+      global.open = realWindowOpen
+      return
+    }
+
+    const notificationBar = new NotificationBar()
+
+    global.open = (url, target, features) => {
+      global.upbCounter++
+      console.log(`[UPB] Popup blocked: ${url}`)
+
+      if (notificationBar.element.style.display === 'block') {
+        notificationBar.resetTimeout()
+      }
+      notificationBar.show(url)
+
+      return FakeWindow
+    }
   }
 }
 
-function activateControlPanel() {
-  if (window.location.href === CONTROL_PANEL) {
-    // Add listener to the add button
-    addNewDomainButton();
-    // Show already stored elements in the list
-    const storedTrust = getTrustedDomains();
-    storedTrust.forEach(addDomainToPermissionList);
-    console.log(storedTrust);
-  }
-}
-
-function activateExtensionMenu() {
-  attachToExtensionMenu(
-    'Configure popup permissions',
-    () => {
-      openControlPanel();
-    },
-  );
-}
-
-/* ---------------------------------------------------------------- */
-
-// Add configure link to Tampermonkey's menu
-activateExtensionMenu();
-
-// Initiate Control Panel logic
-activateControlPanel();
-
-// Start Popup Blocker
-activateBlocker();
+/* Initialize */
+window.addEventListener('load', () => PopupBlocker.initialize())
+GM.registerMenuCommand('Ultra Popup Blocker: Trusted domains', () => new TrustedDomainsModal().show())

@@ -4,7 +4,7 @@
   "description": "Configurable popup blocker that blocks all popup windows by default.",
   "main": "ultra-popup-blocker.user.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npx standard"
   },
   "repository": {
     "type": "git",
@@ -17,8 +17,11 @@
   },
   "homepage": "https://eskander.tn/ultra-popup-blocker/",
   "devDependencies": {
-    "eslint": "^9.13.0",
-    "eslint-config-airbnb-base": "^15.0.0",
-    "eslint-plugin-import": "^2.31.0"
+    "standard": "^17.1.2"
+  },
+  "standard": {
+    "env": [
+      "greasemonkey"
+    ]
   }
 }
