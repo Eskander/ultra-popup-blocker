@@ -10,11 +10,11 @@
 // @supportURL   https://github.com/Eskander/ultra-popup-blocker/issues/new
 // @compatible   firefox Tampermonkey recommended
 // @compatible   chrome Tampermonkey recommended
-// @grant        GM_getValue
-// @grant        GM_setValue
-// @grant        GM_deleteValue
-// @grant        GM_listValues
-// @grant        GM_registerMenuCommand
+// @grant        GM.getValue
+// @grant        GM.setValue
+// @grant        GM.deleteValue
+// @grant        GM.listValues
+// @grant        GM.registerMenuCommand
 // ==/UserScript==
 
 /* Constants and Globals */
@@ -94,30 +94,28 @@ const FakeWindow = {
   focus: () => false
 }
 
-let denyTimeoutId
-let timeLeft = CONSTANTS.TIMEOUT_SECONDS
-
 /* Domain Management */
 class DomainManager {
-  static getCurrentTopDomain () {
+  static async getCurrentTopDomain () {
     const [domainName, topLevelDomain] = document.location.hostname.split('.').slice(-2)
     return `${domainName}.${topLevelDomain}`
   }
 
-  static isCurrentDomainTrusted () {
-    return GM_getValue(this.getCurrentTopDomain())
+  static async isCurrentDomainTrusted () {
+    const domain = await this.getCurrentTopDomain()
+    return await GM.getValue(domain)
   }
 
-  static addTrustedDomain (domain) {
-    GM_setValue(domain, true)
+  static async addTrustedDomain (domain) {
+    await GM.setValue(domain, true)
   }
 
-  static removeTrustedDomain (domain) {
-    GM_deleteValue(domain)
+  static async removeTrustedDomain (domain) {
+    await GM.deleteValue(domain)
   }
 
-  static getTrustedDomains () {
-    return GM_listValues()
+  static async getTrustedDomains () {
+    return await GM.listValues()
   }
 }
 
@@ -146,8 +144,10 @@ class UIComponents {
     return modal
   }
 
-  static updateDenyButtonText (button) {
-    button.innerHTML = `🔴 Deny (${timeLeft})`
+  static updateDenyButtonText (button, timeLeft) {
+    if (button) {
+      button.innerHTML = `🔴 Deny (${timeLeft})`
+    }
   }
 }
 
@@ -155,6 +155,9 @@ class UIComponents {
 class NotificationBar {
   constructor () {
     this.element = document.getElementById('upb-notification-bar') || this.createElement()
+    this.timeLeft = CONSTANTS.TIMEOUT_SECONDS
+    this.denyTimeoutId = null
+    this.denyButton = null
   }
 
   createElement () {
@@ -173,7 +176,14 @@ class NotificationBar {
   hide () {
     this.element.style.display = 'none'
     global.upbCounter = 0
-    clearInterval(denyTimeoutId)
+    this.clearDenyTimeout()
+  }
+
+  clearDenyTimeout () {
+    if (this.denyTimeoutId) {
+      clearInterval(this.denyTimeoutId)
+      this.denyTimeoutId = null
+    }
   }
 
   setMessage (url) {
@@ -187,8 +197,8 @@ class NotificationBar {
     `
   }
 
-  addButtons (url) {
-    const currentDomain = DomainManager.getCurrentTopDomain()
+  async addButtons (url) {
+    const currentDomain = await DomainManager.getCurrentTopDomain()
 
     // Allow Once
     this.element.appendChild(
@@ -200,8 +210,8 @@ class NotificationBar {
 
     // Always Allow
     this.element.appendChild(
-      UIComponents.createButton('🔵 Always Allow', 'trust', () => {
-        DomainManager.addTrustedDomain(currentDomain)
+      UIComponents.createButton('🔵 Always Allow', 'trust', async () => {
+        await DomainManager.addTrustedDomain(currentDomain)
         realWindowOpen(url)
         this.hide()
         global.open = realWindowOpen
@@ -209,11 +219,11 @@ class NotificationBar {
     )
 
     // Deny
-    const denyButton = UIComponents.createButton('🔴 Deny', 'deny', () => {
+    this.denyButton = UIComponents.createButton('🔴 Deny (15)', 'deny', () => {
       this.hide()
       PopupBlocker.initialize()
     }, 'red')
-    this.element.appendChild(denyButton)
+    this.element.appendChild(this.denyButton)
 
     // Config
     const configButton = UIComponents.createButton('🟠 Config', 'config', () => {
@@ -224,19 +234,18 @@ class NotificationBar {
   }
 
   startDenyTimeout () {
-    // Reset timeout for each new popup
-    timeLeft = CONSTANTS.TIMEOUT_SECONDS
-    const denyButton = document.getElementById('upb-deny')
+    this.timeLeft = CONSTANTS.TIMEOUT_SECONDS
+    this.clearDenyTimeout()
 
-    clearInterval(denyTimeoutId)
-    UIComponents.updateDenyButtonText(denyButton)
+    // Initial update
+    UIComponents.updateDenyButtonText(this.denyButton, this.timeLeft)
 
-    denyTimeoutId = setInterval(() => {
-      timeLeft--
-      UIComponents.updateDenyButtonText(denyButton)
+    this.denyTimeoutId = setInterval(() => {
+      this.timeLeft--
+      UIComponents.updateDenyButtonText(this.denyButton, this.timeLeft)
 
-      if (timeLeft <= 0) {
-        clearInterval(denyTimeoutId)
+      if (this.timeLeft <= 0) {
+        this.clearDenyTimeout()
         this.hide()
         PopupBlocker.initialize()
       }
@@ -297,7 +306,7 @@ class TrustedDomainsModal {
     this.element.style.display = 'none'
   }
 
-  refreshDomainsList () {
+  async refreshDomainsList () {
     const existingList = document.getElementById('upb-domains-list')
     if (existingList) existingList.remove()
 
@@ -305,7 +314,7 @@ class TrustedDomainsModal {
     list.id = 'upb-domains-list'
     list.style.cssText = 'margin:0;padding:0;list-style-type:none;'
 
-    const trustedDomains = DomainManager.getTrustedDomains()
+    const trustedDomains = await DomainManager.getTrustedDomains()
 
     if (trustedDomains.length === 0) {
       const message = document.createElement('p')
@@ -313,18 +322,19 @@ class TrustedDomainsModal {
       message.innerText = 'No allowed websites'
       list.appendChild(message)
     } else {
-      trustedDomains.forEach(domain => this.addDomainListItem(list, domain))
+      for (const domain of trustedDomains) {
+        await this.addDomainListItem(list, domain)
+      }
     }
 
     this.element.insertBefore(list, this.element.querySelector('div:last-child'))
   }
 
-  addDomainListItem (list, domain) {
+  async addDomainListItem (list, domain) {
     const item = document.createElement('li')
     item.style.cssText = STYLES.listItem
     item.innerText = domain
 
-    // Hover effects
     item.addEventListener('mouseover', () => {
       item.style.backgroundColor = '#ddd'
     })
@@ -332,7 +342,6 @@ class TrustedDomainsModal {
       item.style.backgroundColor = 'white'
     })
 
-    // Remove button
     const removeButton = document.createElement('span')
     removeButton.style.cssText = STYLES.removeButton
     removeButton.innerText = '×'
@@ -345,8 +354,8 @@ class TrustedDomainsModal {
       removeButton.style.backgroundColor = 'transparent'
       removeButton.style.color = 'black'
     })
-    removeButton.addEventListener('click', () => {
-      DomainManager.removeTrustedDomain(domain)
+    removeButton.addEventListener('click', async () => {
+      await DomainManager.removeTrustedDomain(domain)
       item.remove()
       PopupBlocker.initialize()
     })
@@ -358,16 +367,16 @@ class TrustedDomainsModal {
 
 /* Popup Blocker */
 class PopupBlocker {
-  static initialize () {
+  static async initialize () {
     if (global.open !== realWindowOpen) return
 
-    if (DomainManager.isCurrentDomainTrusted()) {
-      console.log(`[UPB] Trusted domain: ${DomainManager.getCurrentTopDomain()}`)
+    if (await DomainManager.isCurrentDomainTrusted()) {
+      const domain = await DomainManager.getCurrentTopDomain()
+      console.log(`[UPB] Trusted domain: ${domain}`)
       global.open = realWindowOpen
       return
     }
 
-    // Create a singleton notification bar
     const notificationBar = new NotificationBar()
 
     global.open = (url, target, features) => {
@@ -375,11 +384,8 @@ class PopupBlocker {
       console.log(`[UPB] Popup blocked: ${url}`)
 
       if (notificationBar.element.style.display === 'block') {
-        // If notification is already showing, update counter and reset timeout
-        // notificationBar.setMessage(url)
         notificationBar.resetTimeout()
       }
-      // Show new notification
       notificationBar.show(url)
 
       return FakeWindow
@@ -389,4 +395,4 @@ class PopupBlocker {
 
 /* Initialize */
 window.addEventListener('load', () => PopupBlocker.initialize())
-GM_registerMenuCommand('Ultra Popup Blocker: Trusted domains', () => new TrustedDomainsModal().show())
+GM.registerMenuCommand('Ultra Popup Blocker: Trusted domains', () => new TrustedDomainsModal().show())
