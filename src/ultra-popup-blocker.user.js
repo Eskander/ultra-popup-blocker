@@ -63,6 +63,7 @@ const STYLES = {
     font: status-bar;
     background-color: black;
     color: white;
+    display: none;
   `,
   listItem: `
     padding: 12px 8px 12px 40px;
@@ -154,19 +155,25 @@ class UIComponents {
 /* Notification Bar */
 class NotificationBar {
   constructor () {
-    this.element = document.getElementById('upb-notification-bar') || this.createElement()
+    // Don't create the element in constructor
+    this.element = null
     this.timeLeft = CONSTANTS.TIMEOUT_SECONDS
     this.denyTimeoutId = null
     this.denyButton = null
   }
 
   createElement () {
-    const bar = UIComponents.createNotificationBar()
-    document.body.appendChild(bar)
-    return bar
+    if (!this.element) {
+      this.element = UIComponents.createNotificationBar()
+      document.body.appendChild(this.element)
+    }
+    return this.element
   }
 
   show (url) {
+    if (!this.element) {
+      this.createElement()
+    }
     this.element.style.display = 'block'
     this.setMessage(url)
     this.addButtons(url)
@@ -174,7 +181,13 @@ class NotificationBar {
   }
 
   hide () {
-    this.element.style.display = 'none'
+    if (this.element) {
+      this.element.style.display = 'none'
+      if (this.element.parentNode) {
+        this.element.parentNode.removeChild(this.element)
+      }
+      this.element = null
+    }
     global.upbCounter = 0
     this.clearDenyTimeout()
   }
@@ -253,7 +266,7 @@ class NotificationBar {
   }
 
   resetTimeout () {
-    if (this.element.style.display === 'block') {
+    if (this.element && this.element.style.display === 'block') {
       this.startDenyTimeout()
     }
   }
@@ -382,12 +395,7 @@ class PopupBlocker {
     global.open = (url, target, features) => {
       global.upbCounter++
       console.log(`[UPB] Popup blocked: ${url}`)
-
-      if (notificationBar.element.style.display === 'block') {
-        notificationBar.resetTimeout()
-      }
       notificationBar.show(url)
-
       return FakeWindow
     }
   }
