@@ -3,7 +3,7 @@
 // @description  Configurable popup blocker that blocks all popup windows by default.
 // @namespace    eskander.github.io
 // @author       Eskander
-// @version      4.0
+// @version      4.1
 // @include      *
 // @license      MIT
 // @homepage     https://github.com/Eskander/ultra-popup-blocker
@@ -26,58 +26,86 @@ const CONSTANTS = {
 
 const STYLES = {
   modal: `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    width: ${CONSTANTS.MODAL_WIDTH};
-    border: 1px solid black;
-    z-index: 100000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    width: ${CONSTANTS.MODAL_WIDTH} !important;
+    border: 1px solid #000000 !important;
+    z-index: 2147483647 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: Arial !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    box-sizing: border-box !important;
   `,
   modalHeader: `
-    background-color: black;
-    padding: 30px 40px;
-    color: white;
-    text-align: center;
+    background-color: #000000 !important;
+    padding: 30px 40px !important;
+    color: #ffffff !important;
+    text-align: center !important;
+    margin: 0 !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
   `,
   modalFooter: `
-    background-color: black;
-    padding: 5px 40px;
-    color: white;
-    text-align: center;
+    background-color: #000000 !important;
+    padding: 5px 40px !important;
+    color: #ffffff !important;
+    text-align: center !important;
+    margin: 0 !important;
   `,
   button: `
-    margin-right: 20px;
-    padding: 5px;
-    cursor: pointer;
+    margin-right: 20px !important;
+    padding: 5px !important;
+    cursor: pointer !important;
+    font-family: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+    border: 1px solid #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-radius: 3px !important;
   `,
   notificationBar: `
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 99999;
-    width: 100%;
-    padding: 5px;
-    font: status-bar;
-    background-color: black;
-    color: white;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 2147483646 !important;
+    width: 100% !important;
+    padding: 5px !important;
+    font-family: Arial !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    display: none !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
   `,
   listItem: `
-    padding: 12px 8px 12px 40px;
-    font-size: 18px;
-    background-color: white;
-    border-bottom: 1px solid #ccc;
-    position: relative;
-    transition: 0.2s;
+    padding: 12px 8px 12px 40px !important;
+    font-size: 18px !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    border-bottom: 1px solid #000000 !important;
+    position: relative !important;
+    transition: 0.2s !important;
+    margin: 0 !important;
   `,
   removeButton: `
-    cursor: pointer;
-    position: absolute;
-    right: 0;
-    top: 0;
-    padding: 12px 16px;
+    cursor: pointer !important;
+    position: absolute !important;
+    right: 0 !important;
+    top: 0 !important;
+    padding: 12px 16px !important;
+    background: transparent !important;
+    border: none !important;
+    color: #000000 !important;
   `
 }
 
@@ -125,7 +153,7 @@ class UIComponents {
     const button = document.createElement('button')
     button.id = `upb-${id}`
     button.innerHTML = text
-    button.style.cssText = `${STYLES.button} color: ${color};`
+    button.style.cssText = `${STYLES.button} color: ${color} !important;`
     button.addEventListener('click', clickHandler)
     return button
   }
@@ -154,19 +182,25 @@ class UIComponents {
 /* Notification Bar */
 class NotificationBar {
   constructor () {
-    this.element = document.getElementById('upb-notification-bar') || this.createElement()
+    // Don't create the element in constructor
+    this.element = null
     this.timeLeft = CONSTANTS.TIMEOUT_SECONDS
     this.denyTimeoutId = null
     this.denyButton = null
   }
 
   createElement () {
-    const bar = UIComponents.createNotificationBar()
-    document.body.appendChild(bar)
-    return bar
+    if (!this.element) {
+      this.element = UIComponents.createNotificationBar()
+      document.body.appendChild(this.element)
+    }
+    return this.element
   }
 
   show (url) {
+    if (!this.element) {
+      this.createElement()
+    }
     this.element.style.display = 'block'
     this.setMessage(url)
     this.addButtons(url)
@@ -174,7 +208,13 @@ class NotificationBar {
   }
 
   hide () {
-    this.element.style.display = 'none'
+    if (this.element) {
+      this.element.style.display = 'none'
+      if (this.element.parentNode) {
+        this.element.parentNode.removeChild(this.element)
+      }
+      this.element = null
+    }
     global.upbCounter = 0
     this.clearDenyTimeout()
   }
@@ -253,7 +293,7 @@ class NotificationBar {
   }
 
   resetTimeout () {
-    if (this.element.style.display === 'block') {
+    if (this.element && this.element.style.display === 'block') {
       this.startDenyTimeout()
     }
   }
@@ -271,8 +311,8 @@ class TrustedDomainsModal {
     const header = document.createElement('div')
     header.style.cssText = STYLES.modalHeader
     header.innerHTML = `
-      <h2>Ultra Popup Blocker</h2>
-      <h3 style="text-align:left;margin-top:10px;">Trusted websites:</h3>
+      <h2 style="color:white !important;">Ultra Popup Blocker</h2>
+      <h3 style="color:white !important;text-align:left;margin-top:10px;">Trusted websites:</h3>
     `
     modal.appendChild(header)
 
@@ -282,8 +322,8 @@ class TrustedDomainsModal {
     const closeButton = document.createElement('button')
     closeButton.innerText = 'Close'
     closeButton.style.cssText = `
-      background-color: gray;
-      color: white;
+      background-color: #000000;
+      color: #ffffff;
       border: none;
       padding: 10px;
       cursor: pointer;
@@ -382,12 +422,7 @@ class PopupBlocker {
     global.open = (url, target, features) => {
       global.upbCounter++
       console.log(`[UPB] Popup blocked: ${url}`)
-
-      if (notificationBar.element.style.display === 'block') {
-        notificationBar.resetTimeout()
-      }
       notificationBar.show(url)
-
       return FakeWindow
     }
   }
