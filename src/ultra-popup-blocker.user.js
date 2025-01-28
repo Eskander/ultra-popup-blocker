@@ -153,7 +153,7 @@ class UIComponents {
     const button = document.createElement('button')
     button.id = `upb-${id}`
     button.innerHTML = text
-    button.style.cssText = `${STYLES.button} color: ${color};`
+    button.style.cssText = `${STYLES.button} color: ${color} !important;`
     button.addEventListener('click', clickHandler)
     return button
   }
