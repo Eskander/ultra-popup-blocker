@@ -1,46 +1,51 @@
-# Ultra Popup Blocker
+# **Ultra Popup Blocker**  
 
-Ultra Popup Blocker (or UPB for short) is a lightweight Popup Blocker that aims to block **all popup windows** by default (even good, unharmful, user-initiated ones) unless permission is granted, while providing a clean [Permission manager][whtlstid] for configuration.
+Ultra Popup Blocker (**UPB**) is a lightweight popup blocker designed to **block all popup windows by default**—even user-initiated ones—unless explicitly allowed. It provides a simple yet effective [Permission Manager][whtlstid] to manage exceptions.  
 
-<p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/bottom-bar.png"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/bottom-bar.png"></p>  
 
-> [!Note]  
-> Project in maintenance mode, no new features are planned.
+> [!Note]
+> This project is in maintenance mode—no new features are planned.  
 
-[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)
+[![JavaScript Style Guide](https://cdn.rawgit.com/standard/standard/master/badge.svg)](https://github.com/standard/standard)  
 
-### Why another popup blocker?
-Built-in Firefox and Chrome popup blockers block popups that are created automatically (via scripts, on page load, etc...), while popups linked to user actions are allowed. However, some annoying websites will abuse this to spam you with popups anywhere you click in their pages, even seemingly blank places.
+## **Why Another Popup Blocker?**  
 
-### How does it work?
-In JavaScript, functions are first-order citizens. It means you can store a function in a variable and pass it freely. You can also modify the native functions provided by the browser, like 'window.open'. Here, we override 'window.open' with our own implementation which prompts the user to see whether they really want to open a popup window. Note that this is not a bullet proof solution. If you want a comprehensive blocker, use uBlock Origin with the _right lists_.
+Default popup blockers in Firefox and Chrome only block popups triggered automatically (e.g., on page load). However, some websites abuse popups by attaching them to any user interaction, including clicks on seemingly empty areas. **UPB** blocks these aggressive popups, giving you full control.  
 
-### Managing permissions
-The permission manager included with Ultra Popup Blocker lists which websites you trusted to open popups freely.
+## **How It Works**  
 
-<p align="center"><img src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/whitelist-config.png"></p>
+In JavaScript, functions are *first-class citizens*, meaning they can be stored in variables and modified. **UPB** takes advantage of this by overriding `window.open` with a custom implementation that prompts the user for confirmation before opening any popups.  
 
-### Install instructions
-1. Get a userscript manager from your browser's addon store:
-   - Firefox: Install [Violentmonkey][ff_ext1] or [Tampermonkey][ff_ext2]
-   - Chrome: Install [Violentmonkey][cr_ext1] or [Tampermonkey][cr_ext2].
-2. Add **Ultra Popup Blocker** from one of the following sources:
+**Note:** This is not a foolproof solution. For comprehensive protection, use **uBlock Origin** with the appropriate filter lists.  
 
-# [![GreasyFork][button1]][link1] [![OpenUserJS][button2]][link2] [![GitHub][button3]][link3]
+## **Managing Permissions**  
 
-  [ff_ext1]: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
-  [ff_ext2]: https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/
-  [cr_ext1]: https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag
-  [cr_ext2]: https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo
-  
-  [whtlstid]: #managing-permissions
+The built-in **Permission Manager** allows you to whitelist websites that should be allowed to open popups freely.  
 
-  [button1]: https://img.shields.io/badge/Install-GreasyFork-red.svg?longCache=true&style=for-the-badge&
-  [link1]: https://greasyfork.org/en/scripts/387937-ultra-popup-blocker
-  
-  [button2]: https://img.shields.io/badge/Install-OpenUserJS-blue.svg?longCache=true&style=for-the-badge
-  [link2]: https://openuserjs.org/scripts/eskander/Ultra_Popup_Blocker
-  
-  [button3]: https://img.shields.io/badge/Install-GitHub-lightgrey.svg?longCache=true&style=for-the-badge
-  [link3]: https://github.com/Eskander/ultra-popup-blocker/raw/main/src/ultra-popup-blocker.user.js
-  
+<p align="center"><img width="400px" src="https://raw.githubusercontent.com/Eskander/ultra-popup-blocker/main/img/whitelist-config.png"></p>  
+
+## **Installation Instructions**  
+
+1. Install a **userscript manager** for your browser:  
+   - **Firefox**: [Violentmonkey][ff_ext1] or [Tampermonkey][ff_ext2]  
+   - **Chrome**: [Violentmonkey][cr_ext1] or [Tampermonkey][cr_ext2]  
+
+2. Add **Ultra Popup Blocker** from one of the sources below:  
+
+[![GreasyFork][button1]][link1] [![OpenUserJS][button2]][link2] [![GitHub][button3]][link3]  
+
+[whtlstid]: #managing-permissions  
+[ff_ext1]: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/  
+[ff_ext2]: https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/  
+[cr_ext1]: https://chrome.google.com/webstore/detail/violentmonkey/jinjaccalgkegednnccohejagnlnfdag  
+[cr_ext2]: https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo  
+
+[button1]: https://img.shields.io/badge/Install-GreasyFork-red.svg?longCache=true&style=for-the-badge  
+[link1]: https://greasyfork.org/en/scripts/387937-ultra-popup-blocker  
+
+[button2]: https://img.shields.io/badge/Install-OpenUserJS-blue.svg?longCache=true&style=for-the-badge  
+[link2]: https://openuserjs.org/scripts/eskander/Ultra_Popup_Blocker  
+
+[button3]: https://img.shields.io/badge/Install-GitHub-lightgrey.svg?longCache=true&style=for-the-badge  
+[link3]: https://github.com/Eskander/ultra-popup-blocker/raw/main/src/ultra-popup-blocker.user.js  
